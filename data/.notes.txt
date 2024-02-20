@@ -1,0 +1,3 @@
+Data in folders represent variables extracted within the ST-UK project (see there for details)
+
+Forecasted data in tmeanforecast.csv taken from Copernicus on ....

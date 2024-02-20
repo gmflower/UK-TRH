@@ -1,5 +1,5 @@
 ################################################################################
-# E-TRH: SMALL-AREA ANALYSIS OF TEMPERATURE RELATED HOSPITALISATIONS IN ENGLAND
+# UK-TRH: SMALL-AREA ANALYSIS OF TEMPERATURE RELATED HOSPITALISATIONS IN ENGLAND
 ################################################################################
 
 # LOAD PACKAGES

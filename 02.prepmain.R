@@ -1,5 +1,5 @@
 ################################################################################
-# UK-TRM: SMALL-AREA ANALYSIS OF TEMPERATURE-MORTALITY IN ENGLAND & WALES
+# UK-TRH: SMALL-AREA ANALYSIS OF TEMPERATURE-MORTALITY IN ENGLAND & WALES
 ################################################################################
 
 ################################################################################

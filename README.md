@@ -1,2 +1,2 @@
-# E_TRH
+# UK_TRH
 Temperature related hospitalisations

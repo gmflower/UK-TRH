@@ -1,5 +1,5 @@
 ################################################################################
-# UK-TRH: SMALL-AREA ANALYSIS OF TEMPERATURE-MORTALITY IN ENGLAND & WALES
+# UK-TRH: SMALL-AREA ANALYSIS OF TEMPERATURE RELATED HOSPITALISATIONS IN ENGLAND
 ################################################################################
 
 ################################################################################
@@ -25,17 +25,21 @@ listlad <- sort(unique(lookup$LAD11CD))
 ################################################################################
 # MAIN DATASET
 
-# LOAD MORTALITY DATA AND SELECT YEARS
-onsdeath <- as.data.table(readRDS(paste0(deathpath, "/ONSmortality_20211111.RDS")))
-onsdeath <- onsdeath[year(DOD) %in% seqyear,]
-onsdeath[, agegr:=cut(ageinyrs, agecut, labels=agevarlab, include.lowest=T)]
-setkey(onsdeath, lsoa, DOD)
+# LOAD HOSPITALISATIONS DATA AND SELECT YEARS
+#onsdeath <- as.data.table(readRDS(paste0(deathpath, "/ONSmortality_20211111.RDS")))
+hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES.RDS")))
+#onsdeath <- onsdeath[year(DOD) %in% seqyear,]
+hesdata <- hesdata[year(date) %in% seqyear,]
+hesdata <- subset(hesdata, select = c("LSOA11CD", "date", "cvd"))
+#onsdeath[, agegr:=cut(ageinyrs, agecut, labels=agevarlab, include.lowest=T)]
+#setkey(onsdeath, lsoa, DOD)
+setkey(hesdata, LSOA11CD, date)
 
 # COLLAPSE AND RESHAPE BY AGE GROUP
-onsdeath <- onsdeath[, list(d=length(DOD)),
-  by=list(LSOA11CD=lsoa,date=DOD, age=agegr)]
-onsdeath <- dcast(onsdeath, LSOA11CD+date~age, value.var="d", fill=0) 
-setkey(onsdeath, LSOA11CD, date)
+#onsdeath <- onsdeath[, list(d=length(DOD)),
+#  by=list(LSOA11CD=lsoa,date=DOD, age=agegr)]
+#onsdeath <- dcast(onsdeath, LSOA11CD+date~age, value.var="d", fill=0) 
+#setkey(onsdeath, LSOA11CD, date)
 
 # LOAD THE TEMPERATURE DATA
 listtmean <- lapply(seqyear, function(y) {
@@ -53,7 +57,8 @@ datatmean <- datatmean[LSOA11CD %in% listlsoa,]
 setkey(datatmean, LSOA11CD, date)
 
 # MERGE THE TWO, KEEPING ALL THE LATTER TO INCLUDE NO-COUNT DAYS
-datafull <- merge(onsdeath, datatmean, all.y=T)
+#datafull <- merge(onsdeath, datatmean, all.y=T)
+datafull <- merge(hesdata, datatmean, all.y=T)
 
 # MERGE LAD 
 datafull <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), datafull,

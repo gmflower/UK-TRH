@@ -25,14 +25,15 @@ listlad <- sort(unique(lookup$LAD11CD))
 ################################################################################
 # MAIN DATASET
 
-# LOAD HOSPITALISATIONS DATA AND SELECT YEARS
 #onsdeath <- as.data.table(readRDS(paste0(deathpath, "/ONSmortality_20211111.RDS")))
-hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES.RDS")))
 #onsdeath <- onsdeath[year(DOD) %in% seqyear,]
-hesdata <- hesdata[year(date) %in% seqyear,]
-hesdata <- subset(hesdata, select = c("LSOA11CD", "date", "cvd"))
 #onsdeath[, agegr:=cut(ageinyrs, agecut, labels=agevarlab, include.lowest=T)]
 #setkey(onsdeath, lsoa, DOD)
+
+# LOAD HOSPITALISATIONS DATA AND SELECT YEARS
+hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES.RDS")))
+hesdata <- hesdata[year(date) %in% seqyear,]
+hesdata <- subset(hesdata, select = c("LSOA11CD", "date", "agegr", "cvd"))
 setkey(hesdata, LSOA11CD, date)
 
 # COLLAPSE AND RESHAPE BY AGE GROUP
@@ -40,6 +41,9 @@ setkey(hesdata, LSOA11CD, date)
 #  by=list(LSOA11CD=lsoa,date=DOD, age=agegr)]
 #onsdeath <- dcast(onsdeath, LSOA11CD+date~age, value.var="d", fill=0) 
 #setkey(onsdeath, LSOA11CD, date)
+
+# Reshape HES data by age group
+hesdata <- dcast(hesdata, LSOA11CD+date~agegr, value.var="cvd", fill=0) 
 
 # LOAD THE TEMPERATURE DATA
 listtmean <- lapply(seqyear, function(y) {
@@ -58,14 +62,16 @@ setkey(datatmean, LSOA11CD, date)
 
 # MERGE THE TWO, KEEPING ALL THE LATTER TO INCLUDE NO-COUNT DAYS
 #datafull <- merge(onsdeath, datatmean, all.y=T)
-datafull <- merge(hesdata, datatmean, all.y=T)
+hesdata$date <- as.Date(hesdata$date)
+datafull <- merge(hesdata, datatmean, all.y=T, by.x=c("LSOA11CD", "date"), by.y=c("LSOA11CD", "date"))
 
 # MERGE LAD 
 datafull <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), datafull,
   by="LSOA11CD")
 
 # FILL NO-COUNT
-datafull[, (agevarlab):=lapply(.SD, nafill, fill=0), .SDcols=agevarlab]
+#datafull[, (agevarlab):=lapply(.SD, nafill, fill=0), .SDcols=agevarlab]
+datafull[, "mi":=lapply(.SD, nafill, fill=0), .SDcols="mi"]
 
 # CREATE TIME VARS
 datafull[, time:=as.numeric(date)]

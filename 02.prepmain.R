@@ -19,8 +19,8 @@ lookup <- read.csv(paste0(lookuppath, "Lower_Layer_Super_Output_Area__2011__to_"
 lookup <- lookup[with(lookup, order(LSOA11CD, LAD11CD)),]
 
 # LISTS OF LSOA AND LAD (SORTED)
-listlsoa <- unique(lookup$LSOA11CD)
-listlad <- sort(unique(lookup$LAD11CD))
+listlsoa <- unique(lookup$LSOA11CD[substr(lookup$LSOA11CD,1,1)!="W"])
+listlad <- sort(unique(lookup$LAD11CD[substr(lookup$LAD11CD,1,1)!="W"]))
 
 ################################################################################
 # MAIN DATASET
@@ -31,9 +31,9 @@ listlad <- sort(unique(lookup$LAD11CD))
 #setkey(onsdeath, lsoa, DOD)
 
 # LOAD HOSPITALISATIONS DATA AND SELECT YEARS
-hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES.RDS")))
+hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES_stacked.RDS")))
 hesdata <- hesdata[year(date) %in% seqyear,]
-hesdata <- subset(hesdata, select = c("LSOA11CD", "date", "agegr", "cvd"))
+#hesdata <- subset(hesdata, select = c("LSOA11CD", "date", "agegr", "cvd"))
 setkey(hesdata, LSOA11CD, date)
 
 # COLLAPSE AND RESHAPE BY AGE GROUP
@@ -43,7 +43,7 @@ setkey(hesdata, LSOA11CD, date)
 #setkey(onsdeath, LSOA11CD, date)
 
 # Reshape HES data by age group
-hesdata <- dcast(hesdata, LSOA11CD+date~agegr, value.var="cvd", fill=0) 
+hesdata <- dcast(hesdata, cause+LSOA11CD+date~agegr, value.var="count", fill=0) 
 
 # LOAD THE TEMPERATURE DATA
 listtmean <- lapply(seqyear, function(y) {
@@ -63,25 +63,31 @@ setkey(datatmean, LSOA11CD, date)
 # MERGE THE TWO, KEEPING ALL THE LATTER TO INCLUDE NO-COUNT DAYS
 #datafull <- merge(onsdeath, datatmean, all.y=T)
 hesdata$date <- as.Date(hesdata$date)
-datafull <- merge(hesdata, datatmean, all.y=T, by.x=c("LSOA11CD", "date"), by.y=c("LSOA11CD", "date"))
+#datafull <- merge(hesdata, datatmean, all.y=T, by.x=c("LSOA11CD", "date"), by.y=c("LSOA11CD", "date"))
 
 # MERGE LAD 
-datafull <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), datafull,
-  by="LSOA11CD")
+#datafull <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), datafull,
+#  by="LSOA11CD")
+
+# Merge LAD onto hesdata and datatmean 
+hesdata <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), hesdata,
+                  by="LSOA11CD")
+datatmean <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), datatmean,
+                 by="LSOA11CD")
 
 # FILL NO-COUNT
 #datafull[, (agevarlab):=lapply(.SD, nafill, fill=0), .SDcols=agevarlab]
-datafull[, "mi":=lapply(.SD, nafill, fill=0), .SDcols="mi"]
+#datafull[, "mi":=lapply(.SD, nafill, fill=0), .SDcols="mi"]
 
 # CREATE TIME VARS
-datafull[, time:=as.numeric(date)]
-datafull[, year:=year(date)]
-datafull[, month:=month(date)]
-datafull[, doy:=yday(date)]
-datafull[, dow:=wday(date)]
+#datafull[, time:=as.numeric(date)]
+#datafull[, year:=year(date)]
+#datafull[, month:=month(date)]
+#datafull[, doy:=yday(date)]
+#datafull[, dow:=wday(date)]
 
 # CLEAN
-rm(onsdeath, datatmean)
+#rm(hesdata, datatmean)
 
 ################################################################################
 # RURAL-URBAN CLASSIFICATION
@@ -187,8 +193,10 @@ agebuild <- data.frame(LSOA11CD=building[[1]],
 ################################################################################
 # TEMPERATURE SUMMARIES
 
-tmeansumm <-  datafull[, list(meantmean=mean(tmean), 
-  rangetmean=diff(range(tmean))), by=LSOA11CD]
+#tmeansumm <-  datafull[, list(meantmean=mean(tmean), 
+#  rangetmean=diff(range(tmean))), by=LSOA11CD]
+tmeansumm <-  datatmean[, list(meantmean=mean(tmean), 
+                              rangetmean=diff(range(tmean))), by=LSOA11CD]
 
 ################################################################################
 # SHAPEFILES

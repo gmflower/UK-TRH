@@ -19,8 +19,9 @@ lookup <- read.csv(paste0(lookuppath, "Lower_Layer_Super_Output_Area__2011__to_"
 lookup <- lookup[with(lookup, order(LSOA11CD, LAD11CD)),]
 
 # LISTS OF LSOA AND LAD (SORTED)
-listlsoa <- unique(lookup$LSOA11CD[substr(lookup$LSOA11CD,1,1)!="W"])
-listlad <- sort(unique(lookup$LAD11CD[substr(lookup$LAD11CD,1,1)!="W"]))
+# Amended to remove Wales, Isles of Scilly and City of London
+listlsoa <- unique(lookup$LSOA11CD[substr(lookup$LSOA11CD,1,1)!="W" & lookup$LAD11CD!="E06000053" & lookup$LAD11CD!="E09000001"])
+listlad <- sort(unique(lookup$LAD11CD[substr(lookup$LAD11CD,1,1)!="W" & lookup$LAD11CD!="E06000053" & lookup$LAD11CD!="E09000001"]))
 
 ################################################################################
 # MAIN DATASET
@@ -33,6 +34,8 @@ listlad <- sort(unique(lookup$LAD11CD[substr(lookup$LAD11CD,1,1)!="W"]))
 # LOAD HOSPITALISATIONS DATA AND SELECT YEARS
 hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES_stacked.RDS")))
 hesdata <- hesdata[year(date) %in% seqyear,]
+# Remove Wales, Isles of Scilly and City of London:
+hesdata <- hesdata[LAD11CD!="E06000053" & LAD11CD!="E09000001" & substr(LAD11CD,1,1)!="W",]
 #hesdata <- subset(hesdata, select = c("LSOA11CD", "date", "agegr", "cvd"))
 setkey(hesdata, LSOA11CD, date)
 

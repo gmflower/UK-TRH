@@ -29,7 +29,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD), i=seq(listlad),
   if(i%%10==0) cat("\n", "iter=",i, as.character(Sys.time()), "\n",
     file="temp/logstage1.txt", append=T)
  
-    clist <- lapply(c("cvd"), function(k) {
+    clist <- lapply(c(listcause[1],listcause[2],listcause[5],listcause[6],listcause[11]), function(k) {
     
     # Merge datatmean and hesdata(single LAD)   
     data <- merge(hes[cause==k], datatmean[LAD11CD==listlad[i],], all.y=T, by.x=c("LAD11CD", "LSOA11CD", "date"), by.y=c("LAD11CD", "LSOA11CD", "date")) 
@@ -96,7 +96,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD), i=seq(listlad),
   # Close the cause loop:
   })
   
-  names(clist) <- c("cvd")
+  names(clist) <- c(listcause[1],listcause[2],listcause[5],listcause[6],listcause[11])
   
   # RETURN ESTIMATES ABOVE, LAD TMEAN DISTRIBUTUON, LSOA TMEAN AVERAGE AND RANGE,
   #  AND LSOA-SPECIFIC PERCENTILES

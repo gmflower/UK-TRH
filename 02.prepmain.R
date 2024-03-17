@@ -34,9 +34,7 @@ listlad <- sort(unique(lookup$LAD11CD[substr(lookup$LAD11CD,1,1)!="W" & lookup$L
 # LOAD HOSPITALISATIONS DATA AND SELECT YEARS
 hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES_stacked.RDS")))
 hesdata <- hesdata[year(date) %in% seqyear,]
-# Remove Wales, Isles of Scilly and City of London:
-hesdata <- hesdata[LAD11CD!="E06000053" & LAD11CD!="E09000001" & substr(LAD11CD,1,1)!="W",]
-#hesdata <- subset(hesdata, select = c("LSOA11CD", "date", "agegr", "cvd"))
+listcause <- sort(unique(hesdata$cause))
 setkey(hesdata, LSOA11CD, date)
 
 # COLLAPSE AND RESHAPE BY AGE GROUP
@@ -77,6 +75,8 @@ hesdata <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), hesdata,
                   by="LSOA11CD")
 datatmean <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), datatmean,
                  by="LSOA11CD")
+# Remove Wales, Isles of Scilly and City of London:
+hesdata <- hesdata[LAD11CD!="E06000053" & LAD11CD!="E09000001" & substr(LAD11CD,1,1)!="W",]
 
 # FILL NO-COUNT
 #datafull[, (agevarlab):=lapply(.SD, nafill, fill=0), .SDcols=agevarlab]

@@ -17,6 +17,7 @@ lookup <- read.csv(paste0(lookuppath, "Lower_Layer_Super_Output_Area__2011__to_"
 
 # ORDER AND TRANSFORM
 lookup <- lookup[with(lookup, order(LSOA11CD, LAD11CD)),]
+# exclude Wales, Isles of Scilly and City of London here
 
 # LISTS OF LSOA AND LAD (SORTED)
 # Amended to remove Wales, Isles of Scilly and City of London
@@ -44,7 +45,7 @@ setkey(hesdata, LSOA11CD, date)
 #setkey(onsdeath, LSOA11CD, date)
 
 # Reshape HES data by age group
-hesdata <- dcast(hesdata, cause+LSOA11CD+date~agegr, value.var="count", fill=0) 
+#hesdata <- dcast(hesdata, cause+LSOA11CD+date~agegr, value.var="count", fill=0) 
 
 # LOAD THE TEMPERATURE DATA
 listtmean <- lapply(seqyear, function(y) {

@@ -119,10 +119,10 @@ stopCluster(cl)
 #plot(unlist(lapply(stage1list, function(x) sapply(x$estlist, "[[", "disp"))))
 
 all(unlist(lapply(stage1list,function(y)
-                lapply(clist, function(x) sapply(x$estlist, "[[", "conv")))))
+                lapply(y$clist, function(x) sapply(x$estlist, "[[", "conv")))))
 
 plot(unlist(lapply(stage1list,function(y)
-                lapply(clist, function(x) sapply(x$estlist, "[[", "disp")))))
+                lapply(y$clist, function(x) sapply(x$estlist, "[[", "disp")))))
 
 
 # CLEAN

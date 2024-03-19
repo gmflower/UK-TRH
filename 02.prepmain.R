@@ -14,38 +14,30 @@ lookup <- read.csv(paste0(lookuppath, "Lower_Layer_Super_Output_Area__2011__to_"
   "Built-up_Area_Sub-division_to_Built-up_Area_to_Local_Authority_District_to_",
   "Region__December_2011__Lookup_in_England_and_Wales.csv"),
   fileEncoding="UTF-8-BOM")
+# Exclude Wales, Isles of Scilly and City of London
+lookup <- lookup[substr(lookup$LAD11CD,1,1)!="W" & lookup$LAD11CD!="E06000053" & lookup$LAD11CD!="E09000001",]
 
 # ORDER AND TRANSFORM
 lookup <- lookup[with(lookup, order(LSOA11CD, LAD11CD)),]
-# exclude Wales, Isles of Scilly and City of London here
 
 # LISTS OF LSOA AND LAD (SORTED)
-# Amended to remove Wales, Isles of Scilly and City of London
-listlsoa <- unique(lookup$LSOA11CD[substr(lookup$LSOA11CD,1,1)!="W" & lookup$LAD11CD!="E06000053" & lookup$LAD11CD!="E09000001"])
-listlad <- sort(unique(lookup$LAD11CD[substr(lookup$LAD11CD,1,1)!="W" & lookup$LAD11CD!="E06000053" & lookup$LAD11CD!="E09000001"]))
+listlsoa <- unique(lookup$LSOA11CD)
+listlad <- sort(unique(lookup$LAD11CD))
 
 ################################################################################
 # MAIN DATASET
 
-#onsdeath <- as.data.table(readRDS(paste0(deathpath, "/ONSmortality_20211111.RDS")))
-#onsdeath <- onsdeath[year(DOD) %in% seqyear,]
-#onsdeath[, agegr:=cut(ageinyrs, agecut, labels=agevarlab, include.lowest=T)]
-#setkey(onsdeath, lsoa, DOD)
-
 # LOAD HOSPITALISATIONS DATA AND SELECT YEARS
 hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES_stacked.RDS")))
 hesdata <- hesdata[year(date) %in% seqyear,]
+
+# Create a list of causes
 listcause <- sort(unique(hesdata$cause))
+
+# RENAME AND EXCLUDE NON-MATCHING LSOA
+hesdata <- hesdata[LSOA11CD %in% listlsoa,]
+hesdata$date <- as.Date(hesdata$date)
 setkey(hesdata, LSOA11CD, date)
-
-# COLLAPSE AND RESHAPE BY AGE GROUP
-#onsdeath <- onsdeath[, list(d=length(DOD)),
-#  by=list(LSOA11CD=lsoa,date=DOD, age=agegr)]
-#onsdeath <- dcast(onsdeath, LSOA11CD+date~age, value.var="d", fill=0) 
-#setkey(onsdeath, LSOA11CD, date)
-
-# Reshape HES data by age group
-#hesdata <- dcast(hesdata, cause+LSOA11CD+date~agegr, value.var="count", fill=0) 
 
 # LOAD THE TEMPERATURE DATA
 listtmean <- lapply(seqyear, function(y) {
@@ -62,36 +54,11 @@ rm(listtmean)
 datatmean <- datatmean[LSOA11CD %in% listlsoa,]
 setkey(datatmean, LSOA11CD, date)
 
-# MERGE THE TWO, KEEPING ALL THE LATTER TO INCLUDE NO-COUNT DAYS
-#datafull <- merge(onsdeath, datatmean, all.y=T)
-hesdata$date <- as.Date(hesdata$date)
-#datafull <- merge(hesdata, datatmean, all.y=T, by.x=c("LSOA11CD", "date"), by.y=c("LSOA11CD", "date"))
-
-# MERGE LAD 
-#datafull <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), datafull,
-#  by="LSOA11CD")
-
-# Merge LAD onto hesdata and datatmean 
+# Merge LSOA and LAD onto hesdata and datatmean 
 hesdata <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), hesdata,
                   by="LSOA11CD")
 datatmean <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), datatmean,
                  by="LSOA11CD")
-# Remove Wales, Isles of Scilly and City of London:
-hesdata <- hesdata[LAD11CD!="E06000053" & LAD11CD!="E09000001" & substr(LAD11CD,1,1)!="W",]
-
-# FILL NO-COUNT
-#datafull[, (agevarlab):=lapply(.SD, nafill, fill=0), .SDcols=agevarlab]
-#datafull[, "mi":=lapply(.SD, nafill, fill=0), .SDcols="mi"]
-
-# CREATE TIME VARS
-#datafull[, time:=as.numeric(date)]
-#datafull[, year:=year(date)]
-#datafull[, month:=month(date)]
-#datafull[, doy:=yday(date)]
-#datafull[, dow:=wday(date)]
-
-# CLEAN
-#rm(hesdata, datatmean)
 
 ################################################################################
 # RURAL-URBAN CLASSIFICATION

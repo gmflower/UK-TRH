@@ -65,7 +65,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD), dtmean=split(datatmea
       #reshape age counts as columns
       hes_cause <- dcast(hes_cause, cause+LSOA11CD+date~agegr, value.var="count", fill=0) 
       
-      # Merge datatmean and hesdata(single LAD)   
+      # Merge dtmean and hesdata(single LAD, single cause)   
       data <- merge(hes_cause, dtmean, all.y=T, by.x=c("LSOA11CD", "date"), by.y=c("LSOA11CD", "date")) 
       
       # Fill in missings:

@@ -1,5 +1,5 @@
 ################################################################################
-# UK-TRM: SMALL-AREA ANALYSIS OF TEMPERATURE-MORTALITY IN ENGLAND & WALES
+# UK-TRH: SMALL-AREA ANALYSIS OF TEMPERATURE RELATED HOSPITALISATIONS IN ENGLAND
 ################################################################################
 
 ################################################################################
@@ -14,7 +14,7 @@ lsoadata <- list(lookup[,c("LSOA11CD","LAD11CD")], ruralurban, poptot65,
   popdens, imd, heating, albedo, evi, imperv, agebuild, tmeansumm) |> 
   Reduce(merge, x=_)
 
-# AGGREAGATE BY LAD (EXCLUDE RURAL/URBAM, SUM POP, AVERAGE REST WEIGHTED BY POP)
+# AGGREGATE BY LAD (EXCLUDE RURAL/URBAN, SUM POP, AVERAGE REST WEIGHTED BY POP)
 temp <- lsoadata %>%
   group_by(LAD11CD) %>%
   summarise_at(vars(pop65:rangetmean), list(~weighted.mean(., poptot)))

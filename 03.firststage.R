@@ -115,7 +115,7 @@ stopCluster(cl)
 # CHECKS, CLEAN, AND SAVE
 
 # CHECK CONVERGENCE AND DISPERSION
-#all(unlist(lapply(stage1list, function(x) sapply(x$estlist, "[[", "conv"))))
+#all(unlist(lapply(stage1list, function(x)  sapply(x$estlist, "[[", "conv"))))
 #plot(unlist(lapply(stage1list, function(x) sapply(x$estlist, "[[", "disp"))))
 
 all(unlist(lapply(stage1list,function(y)

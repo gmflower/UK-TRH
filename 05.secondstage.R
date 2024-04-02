@@ -19,7 +19,6 @@ explsoa <- rep(seq(listlsoa), each=length(agelab))
 
 # EXTRACT THE COEF/VCOV AT LAD LEVEL
 # NB:BIND AGE-SPECIFIC FOR COEF, UNLIST 1 LEVEL FOR VCOV
-# amend to pick up new coef, save as lists for all causes
 #ladcoef <- lapply(stage1list, function(x) 
 #  t(sapply(x$estlist, "[[", "coefall"))) |> Reduce(rbind, x=_) |> 
 #  as.data.frame() |> cbind(LAD11CD=listlad[explad], agegr=agevarlab) |>
@@ -53,12 +52,13 @@ lsoacomp <- predict(pca, newdata=lsoadata[, metanames])[,seq(ncomp)] |>
 # loop across causes to pick up right coefs (start cause loop)
 coefmeta <- NULL
 vcovmeta <- NULL
+cmetaall <- NULL
 
 for (i in listcause[c(1,2,5,6,11)]) {
 
 print(i)
   
-coefcause<- lapply(ladcoef, "[[", i) |> Reduce(rbind, x=_) |> 
+coefcause <- lapply(ladcoef, "[[", i) |> Reduce(rbind, x=_) |> 
   as.data.frame() |> cbind(LAD11CD=listlad[explad], agegr=agevarlab) |>
   relocate(LAD11CD, agegr) |> remove_rownames()
 
@@ -75,6 +75,7 @@ metaall <- mixmeta(fmeta, S=vcovcause[-c(1:2)], method="fixed",
 summary(metaall)
 
 # EXTRACT META-ANALYTICAL COEF/VCOV
+cmetaall[[i]] <- metaall
 coefmeta[[i]] <- coef(metaall)
 vcovmeta[[i]] <- vcov(metaall)
 }

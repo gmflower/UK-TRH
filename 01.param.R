@@ -19,7 +19,7 @@ agecut <- c(0, as.numeric(substr(agelab[-1],1,2))-1, 150)
 
 # SEQUENCE OF YEARS
 #seqyear <- 2009:2021
-seqyear <- 2020:2021
+seqyear <- 2008:2021
   
 # SEQUENCE OF PERCENTILES
 predper <- c(seq(0,1,0.1), 2:98, seq(99,100,0.1))

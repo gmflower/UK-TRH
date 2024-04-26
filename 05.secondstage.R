@@ -7,7 +7,7 @@
 ################################################################################
 
 ################################################################################
-# PCA AND META-ANALYSIS
+# RUN PCA, PREPARE META-VARIABLES, AND EXTRACT PARAMETERS
 
 # RUN THE PCA
 pca <- prcomp(laddata[,metanames], center=T, scale=T)
@@ -18,23 +18,22 @@ explad <- rep(seq(listlad), each=length(agelab))
 explsoa <- rep(seq(listlsoa), each=length(agelab))
 
 # EXTRACT THE COEF/VCOV AT LAD LEVEL
-# NB:BIND AGE-SPECIFIC FOR COEF, UNLIST 1 LEVEL FOR VCOV
-#ladcoef <- lapply(stage1list, function(x) 
-#  t(sapply(x$estlist, "[[", "coefall"))) |> Reduce(rbind, x=_) |> 
-#  as.data.frame() |> cbind(LAD11CD=listlad[explad], agegr=agevarlab) |>
-#  relocate(LAD11CD, agegr) |> remove_rownames()
-
-ladcoef <- lapply(stage1list,function(y)
-  lapply(y$clist, function(x) t(sapply(x$estlist, "[[", "coefall"))))
-
-#ladvcov <- unlist(lapply(stage1list, function(x) 
-#  lapply(x$estlist, "[[", "vcovall")), recursive=F) |> lapply(vechMat) |>
-#  lapply(t) |> Reduce(rbind, x=_) |> as.data.frame() |>
-#  cbind(LAD11CD=listlad[explad], agegr=agevarlab) |> relocate(LAD11CD, agegr)
-
-ladvcov <- lapply(stage1list,function(y)
-  lapply(y$clist, function(x) lapply(x$estlist, "[[", "vcovall")))
-
+# NB: LIST OF DATAFRAMES BY CAUSE
+ladcoeflist <- lapply(seq(setcause), function(k) {
+  lapply(seq(stage1list), function(i) 
+    t(sapply(stage1list[[i]]$clist[[k]], "[[", "coefall"))) |> 
+    Reduce(rbind, x=_) |> as.data.frame() |> 
+    cbind(LAD11CD=listlad[explad], agegr=agevarlab) |>
+    relocate(LAD11CD, agegr) |> remove_rownames()
+})
+ladvcovlist <- lapply(seq(setcause), function(k) {
+  lapply(seq(stage1list), function(i) 
+    lapply(stage1list[[i]]$clist[[k]], "[[", "vcovall")) |> 
+    unlist(recursive=F) |> lapply(vechMat) |> Reduce(rbind, x=_) |> 
+    as.data.frame() |> cbind(LAD11CD=listlad[explad], agegr=agevarlab) |>
+    relocate(LAD11CD, agegr) |> remove_rownames()
+})
+names(ladcoeflist) <- names(ladvcovlist) <- setcause
 
 # FIND THE OPTIMAL NUMBER OF COMPONENTS FOR THE PCA
 # PRE-SET NUMBER OF COMPONENT TO 3
@@ -47,37 +46,42 @@ ladcomp <- cbind(LAD11CD=listlad, as.data.frame(pca$x[, seq(ncomp)]))
 lsoacomp <- predict(pca, newdata=lsoadata[, metanames])[,seq(ncomp)] |>
   as.data.frame() |> cbind(LSOA11CD=listlsoa) |> relocate(LSOA11CD)
 
+################################################################################
 # META-ANALYTICAL MODEL FOR OVERALL CUMULATIVE (WITH FIXD-EFFECTS)
 
-# loop across causes to pick up right coefs (start cause loop)
-coefmeta <- NULL
-vcovmeta <- NULL
-cmetaall <- NULL
+# EMPTY OBJECTS
+coefmetalist <- vcovmetalist <- vector(mode="list", length=length(setcause))
+names(coefmetalist) <- names(vcovmetalist) <- setcause
+hetmeta <- matrix(NA, nrow=length(setcause), ncol=2, 
+  dimnames=list(setcause, c("qstat","i2stat")))
+#convmeta <- rep(NA, length(setcause))
+#names(convmeta) <- setcause
 
-for (i in listcause[c(1,2,5,6,11)]) {
-
-print(i)
-  
-coefcause <- lapply(ladcoef, "[[", i) |> Reduce(rbind, x=_) |> 
-  as.data.frame() |> cbind(LAD11CD=listlad[explad], agegr=agevarlab) |>
-  relocate(LAD11CD, agegr) |> remove_rownames()
-
-vcovcause <- unlist(lapply(ladvcov, "[[", i),recursive=F)  |> lapply(vechMat) |>
-  lapply(t) |> Reduce(rbind, x=_) |> as.data.frame() |>
-  cbind(LAD11CD=listlad[explad], agegr=agevarlab) |> relocate(LAD11CD, agegr)
-
-fmeta <- paste0("cbind(", paste(names(coefcause[-c(1:2)]), collapse=", "),
+# DEFINE FORMULA (NB: IDENTICAL FOR ALL CAUSES)
+fmeta <- paste0("cbind(", paste(names(ladcoeflist[[i]][-c(1:2)]), collapse=", "),
   ") ~ ", paste(c("agegr", names(ladcomp)[-1]), collapse=" + ")) |>
   as.formula()
 
-metaall <- mixmeta(fmeta, S=vcovcause[-c(1:2)], method="fixed", 
-  data=merge(coefcause, ladcomp))
-summary(metaall)
-
-# EXTRACT META-ANALYTICAL COEF/VCOV
-cmetaall[[i]] <- metaall
-coefmeta[[i]] <- coef(metaall)
-vcovmeta[[i]] <- vcov(metaall)
+# RUN THE META-ANALYTICAL MODEL LOOPING ACROSS CAUSES
+for(k in seq(setcause)) {
+  
+  # PRINT
+  cat(setcause[k], "")
+  
+  # RUN THE META-REGRESSION
+  metaall <- mixmeta(fmeta, S=ladvcovlist[[k]][-c(1:2)], method="fixed", 
+    data=merge(ladcoeflist[[k]], ladcomp))
+  
+  # SUMMARY
+  summeta <- summary(metaall)
+  
+  # STORE THE RESULTS
+  coefmetalist[[1]] <- coef(metaall)
+  vcovmetalist[[1]] <- vcov(metaall)
+  #convmeta[i] <- metaall$converged
+  hetmeta[k,] <- c(summeta$qstat$pvalue[1], summeta$i2stat[1])
 }
+(rm(metaall, summeta))
 
-# end cause loop
+# CHECK CONVERGENCE
+#all(convmeta)

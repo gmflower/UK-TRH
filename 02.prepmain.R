@@ -14,8 +14,10 @@ lookup <- read.csv(paste0(lookuppath, "Lower_Layer_Super_Output_Area__2011__to_"
   "Built-up_Area_Sub-division_to_Built-up_Area_to_Local_Authority_District_to_",
   "Region__December_2011__Lookup_in_England_and_Wales.csv"),
   fileEncoding="UTF-8-BOM")
-# Exclude Wales, Isles of Scilly and City of London
-lookup <- lookup[substr(lookup$LAD11CD,1,1)!="W" & lookup$LAD11CD!="E06000053" & lookup$LAD11CD!="E09000001",]
+
+# EXCLUDE WALES, ISLES OF SCILLY, AND CITY OF LONDON
+lookup <- subset(lookup, 
+  substr(lookup$LAD11CD,1,1)!="W" & !LAD11CD %in% c("E06000053","E09000001"))
 
 # ORDER AND TRANSFORM
 lookup <- lookup[with(lookup, order(LSOA11CD, LAD11CD)),]
@@ -27,15 +29,19 @@ listlad <- sort(unique(lookup$LAD11CD))
 ################################################################################
 # MAIN DATASET
 
-# LOAD HOSPITALISATIONS DATA AND SELECT YEARS
+# LOAD HOSPITALISATIONS DATA, SELECT YEARS, REMOVE MISSING AGE
 hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES_stacked.RDS")))
 hesdata <- hesdata[year(date) %in% seqyear,]
+hesdata <- hesdata[!is.na(agegr)]
 
-# Create a list of causes
-listcause <- sort(unique(hesdata$cause))
+# CREATE A LIST OF CAUSES
+# NB: SELECT IF NEEDED
+setcause <- sort(unique(hesdata$cause))[c(1,2,5,6,11)]
 
 # RENAME AND EXCLUDE NON-MATCHING LSOA
 hesdata <- hesdata[LSOA11CD %in% listlsoa,]
+
+# TRANFORM DATE AND SET KEYS
 hesdata$date <- as.Date(hesdata$date)
 setkey(hesdata, LSOA11CD, date)
 
@@ -54,11 +60,11 @@ rm(listtmean)
 datatmean <- datatmean[LSOA11CD %in% listlsoa,]
 setkey(datatmean, LSOA11CD, date)
 
-# Merge LSOA and LAD onto hesdata and datatmean 
-hesdata <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), hesdata,
-                  by="LSOA11CD")
-datatmean <- merge(as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]), datatmean,
-                 by="LSOA11CD")
+# MERGE LSOA AND LAD ONTO HES AND TMEAN DATA 
+hesdata <- as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]) |>
+  merge(hesdata, by="LSOA11CD")
+datatmean <- as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]) |>
+  merge(datatmean, by="LSOA11CD")
 
 ################################################################################
 # RURAL-URBAN CLASSIFICATION
@@ -166,8 +172,8 @@ agebuild <- data.frame(LSOA11CD=building[[1]],
 
 #tmeansumm <-  datafull[, list(meantmean=mean(tmean), 
 #  rangetmean=diff(range(tmean))), by=LSOA11CD]
-tmeansumm <-  datatmean[, list(meantmean=mean(tmean), 
-                              rangetmean=diff(range(tmean))), by=LSOA11CD]
+tmeansumm <-  datatmean[, list(meantmean=mean(tmean),
+  rangetmean=diff(range(tmean))), by=LSOA11CD]
 
 ################################################################################
 # SHAPEFILES

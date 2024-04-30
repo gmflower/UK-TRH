@@ -4,7 +4,8 @@
 
 # LOAD PACKAGES
 library(dlnm); library(mixmeta)
-library(tsModel) ; library(splines) ; library(gnm) ; library(mgcv)
+library(tsModel) ; library(splines) ; library(pbs)
+library(gnm) ; library(mgcv)
 library(data.table)
 library(dplyr) ; library(tidyr); library(tibble) ; library(lubridate)
 library(foreach) ; library(doParallel)

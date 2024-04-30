@@ -99,6 +99,41 @@ stdweight <- c(80500, 10500, 6500, 2500) / 100000
 names(stdweight) <- unique(pop$agegr)[seq(length(stdweight))]
 
 ################################################################################
+# DERIVE STATS FOR DEFINING BASELINE EVENTS AT LSOA LEVEL
+
+# MULTIPLICATIVE FACTOR FOR SEASONALITY OF EVENTS BY CAUSE AND AGE GROUP
+seasevent <- lapply(setcause, function(x) {
+  
+  # RETRIEVE THE TOTAL COUNTS BY AGE GROUP AND DAY OF THE YEAR
+  data <- hesdata[cause==x]
+  data[, doy:=yday(date)]
+  data <- data[, list(count=sum(count)), by=c("agegr","doy")]
+  
+  # FUNCTION TO COMPUTE THE SMOOTHED PROPORTION
+  funbase <- function(count, doy) {
+    mod <- glm(count ~ pbs(doy,4,Bound=c(1,366)), family=poisson())
+    pred <- predict(mod, newdata=data.frame(doy=1:366), type="response")
+    data.table(doy=1:366, mult=pred/mean(pred))
+  }
+  
+  # APPLY THE FUNCTION, ADD THE CAUSE, REORDER
+  data <- data[, funbase(count, doy), by="agegr"]
+  data$cause <- x
+  setcolorder(data, "cause")
+  setkey(data, cause, agegr, doy)
+
+  # RETURN
+  data
+}) |> Reduce(rbind, x=_)
+
+# AVERAGE DAILY EVENTS BY LAD AND LSOA/LAD POP PROPORTION BY CAUSE AND AGE GROUP
+ladevent <- hesdata[, list(count=sum(count)/length(seqyear)/365.25),
+  by=c("LAD11CD","agegr","cause")]
+lsoaprop <- as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]) |>
+  merge(pop, by="LSOA11CD")
+lsoaprop[, prop:=pop/sum(pop), by=c("LAD11CD","agegr")]
+
+################################################################################
 # CENSUS VARIABLES
 
 # % OF POP 65 AND OVER

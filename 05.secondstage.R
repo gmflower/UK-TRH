@@ -58,7 +58,7 @@ hetmeta <- matrix(NA, nrow=length(setcause), ncol=2,
 #names(convmeta) <- setcause
 
 # DEFINE FORMULA (NB: IDENTICAL FOR ALL CAUSES)
-fmeta <- paste0("cbind(", paste(names(ladcoeflist[[i]][-c(1:2)]), collapse=", "),
+fmeta <- paste0("cbind(", paste(names(ladcoeflist[[1]][-c(1:2)]), collapse=", "),
   ") ~ ", paste(c("agegr", names(ladcomp)[-1]), collapse=" + ")) |>
   as.formula()
 
@@ -76,8 +76,8 @@ for(k in seq(setcause)) {
   summeta <- summary(metaall)
   
   # STORE THE RESULTS
-  coefmetalist[[1]] <- coef(metaall)
-  vcovmetalist[[1]] <- vcov(metaall)
+  coefmetalist[[k]] <- coef(metaall)
+  vcovmetalist[[k]] <- vcov(metaall)
   #convmeta[i] <- metaall$converged
   hetmeta[k,] <- c(summeta$qstat$pvalue[1], summeta$i2stat[1])
 }

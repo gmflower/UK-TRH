@@ -297,17 +297,22 @@ for(k in seq(setcause)) {
   stdrateall <- merge(stdrateall, temp[, list("95%eCIlow"=quantile(value, 0.025),
     "95%eCIhigh"=quantile(value, 0.975)), by=effect], by=c("effect"))
   
-  # SAVE THE OUTPUT
-  save(anlsoa, stdratelsoa, anlad, stdratelad, anreg, stdratereg, animd,
-    stdrateimd, anall, stdrateall, mmtmmplsoa, rrlsoa, toteventlsoa,
-    file=paste0("output/output_",setcause[k],".RData"))
+  # SAVE THE OUTPUT AS A SINGLE LIST OBJECT
+  list(anlsoa, stdratelsoa, anlad, stdratelad, anreg, stdratereg, animd,
+    stdrateimd, anall, stdrateall, mmtmmplsoa, rrlsoa, toteventlsoa) |>
+    save(file=paste0("output/output_",setcause[k],".RDS"))
   
   # REMOVE OBJECTS
   rm(effectlist, ansim, temp)
-  rm(mmtmmplsoa, rrlsoa, toteventlsoa)
   rm(anlsoa, stdratelsoa, anlad, stdratelad, anreg, stdratereg, animd,
-    stdrateimd, anall, stdrateall)
+    stdrateimd, anall, stdrateall, mmtmmplsoa, rrlsoa, toteventlsoa)
 }
 
 # REMOVE PARALLELIZATION
 stopCluster(cl)
+
+# REMOVE LARGE OBJECTS
+rm(hesdata, datatmean)
+
+# SAVE
+save.image("temp/effects.RData")

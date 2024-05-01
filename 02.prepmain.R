@@ -142,11 +142,13 @@ KS102EW <- read.csv(paste0(dir, "KS102EW.csv"))
 poptot65 <- data.frame(LSOA11CD=KS102EW$geography.code,
   poptot=KS102EW[[5]],
   pop65=rowSums(KS102EW[18:21])/KS102EW[[5]])
+rm(KS102EW)
 
 # POPULATION DENSITY
 dir <- "V:/VolumeQ/AGteam/NOMIS/census2011/KeyStatistics/"
 KS101EW <- read.csv(paste0(dir, "KS101EW.csv"))
 popdens <- data.frame(LSOA11CD=KS101EW$geography.code, popdens=KS101EW[[12]])
+rm(KS101EW)
 
 # IMD ENGLAND (2015)
 dir <- "V:/VolumeQ/AGteam/GOV/England/IMD/2015/"
@@ -167,12 +169,14 @@ names(walimd) <- names(engimd)
 engimd[-1] <- lapply(engimd[-1], function(x) x/max(x))
 walimd[-1] <- lapply(walimd[-1], function(x) x/max(x))
 imd <- rbind(engimd, walimd)
+rm(engimd,walimd)
 
 # % HOUSE WITH CENTRAL HEATING
 dir <- "V:/VolumeQ/AGteam/NOMIS/census2011/KeyStatistics/"
 KS403EW <- read.csv(paste0(dir, "KS403EW.csv"))
 heating <- data.frame(LSOA11CD=KS403EW$geography.code,
   heating=KS403EW[[7]]/KS403EW[[5]])
+rm(KS403EW)
 
 ################################################################################
 # SATELLITE DATA
@@ -188,6 +192,7 @@ eviwin <- readRDS("data/EVI_250m/EVI_Jan2011_lsoa.RDS")[,c(1,6)]
 names(eviwin) <- c("LSOA11CD", "eviwin")
 evi <- as.data.frame(merge(evisum, eviwin))
 evi$evi <- rowMeans(evi[,-1])
+rm(evisum, eviwin)
 
 # IMPERVIOUS SURFACES
 imperv <- readRDS("data/Imp_surface100m/IMP_SurF1002012_lsoa.RDS")[,c(1,6)]
@@ -201,6 +206,7 @@ midyear <- c(1900, round((cutoffyear2 - cutoffyear1)/2 + cutoffyear1))
 age2015 <- 2015-midyear
 agebuild <- data.frame(LSOA11CD=building[[1]],
   agebuild=apply(building[3:14], 1, function(x) sum(x*age2015)/sum(x)))
+rm(building)
 
 ################################################################################
 # TEMPERATURE SUMMARIES

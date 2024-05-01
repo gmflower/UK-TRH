@@ -9,10 +9,12 @@
 ################################################################################
 # PREPARE THE DATA AT LSOA AND LAD LEVEL
 
-# MERGE META-VARIABLES
+# MERGE META-VARIABLES AND ERASE THEM
 lsoadata <- list(lookup[,c("LSOA11CD","LAD11CD")], ruralurban, poptot65, 
   popdens, imd, heating, albedo, evi, imperv, agebuild, tmeansumm) |> 
   Reduce(merge, x=_)
+rm(ruralurban, poptot65, popdens, imd, heating, albedo, evi, imperv, agebuild,
+  tmeansumm)
 
 # AGGREGATE BY LAD (EXCLUDE RURAL/URBAN, SUM POP, AVERAGE REST WEIGHTED BY POP)
 temp <- lsoadata %>%

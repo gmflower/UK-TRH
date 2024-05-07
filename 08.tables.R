@@ -17,6 +17,10 @@ funformat <- function(mat, digits=0) {
 ################################################################################
 # DESCRIPTIVE TABLE
 
+# EXTRACT TEMPERATURE PERCENTILES BY LSOA
+lsoatmeanper <- lapply(stage1list, "[[", "lsoatmeanper") |> 
+  Reduce(rbind, x=_) |> arrange(LSOA11CD)
+
 # TABLE WITH SUMMARY STATISTICS PER REGION
 tabdesc <- lookup |>
   merge(lsoadata[c("LSOA11CD","meantmean")]) |>
@@ -104,12 +108,3 @@ write.csv(tabeffsum, row.names=F, file="tables/tabeffsum.csv")
 
 # CLEAN
 rm(rrtab, antab, mmtmmptab, stdratetab)
-
-################################################################################
-# TABLE OF EFFECT MODIFICATION (RATIO OF RELATIVE RISKS)
-
-tabrrr <- pivot_wider(cbind(rrrvar[2:3], rrr=funformat(rrrvar[4:6], 3)),
-  names_from=2, values_from=3)
-
-# SAVE
-write.csv(tabrrr, row.names=F, file="tables/tabrrr.csv")

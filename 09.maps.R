@@ -48,51 +48,6 @@ regmap <- ladmap %>%
 #cmdbox <- st_as_sfc(st_bbox(subset(lsoamap, lookup$LAD11CD=="E09000007")))
 
 ################################################################################
-# TMAP
-
-# ukheat <- tm_shape(lsoamap) + 
-#   tm_fill("RR99", palette="YlOrRd", title="RR Heat", style="quantile", n=10) + 
-#   tm_shape(ladmap) + tm_borders(col="black") +
-#   tm_layout(frame=F)
-# 
-# ukmmt <- tm_shape(lsoamap) + 
-#   tm_fill("mmt", palette="PiYG", title="MMT (C)", style="quantile", n=10) + 
-#   tm_shape(ladmap) + tm_borders(col="black") +
-#   tm_layout(frame=F)
-# 
-# ukcold <- tm_shape(lsoamap) + 
-#   tm_fill("RR01", palette="Blues", title="RR cold", style="quantile", n=10) + 
-#   tm_shape(ladmap) + tm_borders(col="black") +
-#   tm_layout(frame=F)
-# 
-# lndheat <- tm_shape(subset(lsoamap, lookup$RGN11CD=="E12000007")) + 
-#   tm_fill("RR99", palette="YlOrRd", title="RR Heat", style="quantile", n=10) + 
-#   tm_shape(subset(ladmap, lookup$RGN11CD=="E12000007")) + tm_borders(col="black") +
-#   tm_layout(frame=F)
-# 
-# lndmmt <- tm_shape(subset(lsoamap, lookup$RGN11CD=="E12000007")) + 
-#   tm_fill("mmt", palette="PiYG", title="MMT (C)", style="quantile", n=10) + 
-#   tm_shape(subset(ladmap, lookup$RGN11CD=="E12000007")) + tm_borders(col="black") +
-#   tm_layout(frame=F)
-# 
-# lndcold <- tm_shape(subset(lsoamap, lookup$RGN11CD=="E12000007")) + 
-#   tm_fill("RR01", palette="Blues", title="RR cold", style="quantile", n=10) + 
-#   tm_shape(subset(ladmap, lookup$RGN11CD=="E12000007")) + tm_borders(col="black") +
-#   tm_layout(frame=F)
-# 
-# 
-# pdf("maptmap.pdf", height=10, width=16)
-# grid.newpage()
-# pushViewport(viewport(layout=grid.layout(2, 3, height=c(7,3))))
-# print(ukheat, vp=viewport(layout.pos.row=1, layout.pos.col=1))
-# print(ukmmt, vp=viewport(layout.pos.row=1, layout.pos.col=2))
-# print(ukcold, vp=viewport(layout.pos.row=1, layout.pos.col=3))
-# print(lndheat, vp=viewport(layout.pos.row=2, layout.pos.col=1))
-# print(lndmmt, vp=viewport(layout.pos.row=2, layout.pos.col=2))
-# print(lndcold, vp=viewport(layout.pos.row=2, layout.pos.col=3))
-# dev.off()
-
-################################################################################
 # STDRATEs AND MMT BY LSOA
 
 # DEFINE THE CUT-OFF POINTS
@@ -183,60 +138,6 @@ ukheat + lndheat + cmdheat +
   ukmmt + lndmmt + cmdmmt + 
   ukcold + lndcold + cmdcold +
   plot_layout(nrow=3, ncol=3, byrow=F, height=c(1,0.5,0.4))
-dev.off()
-
-################################################################################
-# STDRATEs BY LAD
-
-# HEAT
-ukheat <- ggplot(data=ladmap) + 
-  geom_sf(aes(fill=cut(stdrate_heat, cutheat, inc=T)), col=1, size=0.2) +
-  scale_fill_brewer(palette="YlOrRd") + 
-  theme_void() + labs(title="England & Wales") +
-  theme(legend.position="none", plot.title=element_text(hjust=1)) 
-lndheat <- ggplot(data=subset(ladmap, RGN11CD=="E12000007")) + 
-  geom_sf(aes(fill=cut(stdrate_heat, cutheat, inc=T)), col=1, size=0.2) +
-  scale_fill_brewer(palette="YlOrRd", drop=F) + 
-  theme_void() + labs(title="Greater London") +
-  theme(legend.position="none", plot.title=element_text(hjust=1)) 
-cmdheat <- ggplot(data=subset(ladmap, LAD11CD=="E09000007")) + 
-  geom_sf(aes(fill=cut(stdrate_heat, cutheat, inc=T)), col=1, size=0.2) +
-  guides(fill=guide_colorsteps(barwidth=18, barheight=0.6, title.position="top",
-    title.hjust=0.5)) + 
-  scale_fill_brewer(palette="YlOrRd", drop=F,
-    name="Heat-related standardised mortality rate (x 100,000)") + 
-  theme_void() + labs(title="Borough of Camden") +
-  theme(legend.position="bottom", plot.title=element_text(hjust=1)) 
-
-# COLD
-ukcold <- ggplot(data=ladmap) + 
-    geom_sf(aes(fill=cut(stdrate_cold, cutcold, inc=T)), col=1, size=0.2) +
-    scale_fill_brewer(palette="Blues", name="RR cold") + 
-    theme_void() +
-  theme(legend.position="none", plot.title=element_text(hjust=1)) +
-  annotation_scale(style="ticks", width_hint=.3, location="tr",
-    pad_x=unit(1, "cm"), pad_y=unit(1, "cm"))
-lndcold <- ggplot(data=subset(ladmap, RGN11CD=="E12000007")) + 
-  geom_sf(aes(fill=cut(stdrate_cold, cutcold, inc=T)), col=1, size=0.2) +
-  scale_fill_brewer(palette="Blues", name="RR cold", drop=F) + 
-  theme_void() +
-  theme(legend.position="none", plot.title=element_text(hjust=1)) +
-  annotation_scale(style="ticks", width_hint=.3, location="tr")
-cmdcold <- ggplot(data=subset(ladmap, LAD11CD=="E09000007")) + 
-  geom_sf(aes(fill=cut(stdrate_cold, cutcold, inc=T)), col=1, size=0.2) +
-  guides(fill=guide_colorsteps(barwidth=18, barheight=0.6, title.position="top",
-    title.hjust=0.5)) + 
-  scale_fill_brewer(palette="Blues", drop=F,
-    name="Cold-related standardised mortality rate (x 100,000)") + 
-  theme_void() +
-  theme(legend.position="bottom", plot.title=element_text(hjust=1)) +
-  annotation_scale(style="ticks", width_hint=.3, location="tr",
-    pad_x=unit(0, "cm"), pad_y=unit(0, "cm")) 
-
-png("figures/ladratemap.png", height=3400, width=2666, res=288)
-ukheat + lndheat + cmdheat + 
-  ukcold + lndcold + cmdcold +
-  plot_layout(nrow=3, ncol=2, byrow=F, height=c(1,0.5,0.4))
 dev.off()
 
 ################################################################################

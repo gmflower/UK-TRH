@@ -23,6 +23,10 @@ saveRDS(lsoadata, file="objects/lsoadata.RDS")
 saveRDS(ladcoef, file="objects/ladcoef.RDS")
 saveRDS(ladvcov, file="objects/ladvcov.RDS")
 
+# SAVE LIST OF META-VARIABLES AND LABELS
+saveRDS(metanames, file="objects/metanames.RDS")
+saveRDS(metalab, file="objects/metalab.RDS")
+
 # SAVE PCA COMPONENTS AT LAD AND LSOA LEVEL
 saveRDS(ladcomp, file="objects/ladcomp.RDS")
 saveRDS(lsoacomp, file="objects/lsoacomp.RDS")

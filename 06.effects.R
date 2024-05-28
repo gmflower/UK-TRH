@@ -298,10 +298,11 @@ for(k in seq(setcause)) {
     "95%eCIhigh"=quantile(value, 0.975)), by=effect], by=c("effect"))
   
   # SAVE THE OUTPUT AS A SINGLE LIST OBJECT
-  list(anlsoa, stdratelsoa, anlad, stdratelad, anreg, stdratereg, animd,
-    stdrateimd, anall, stdrateall, mmtmmplsoa, rrlsoa, toteventlsoa) |>
-    save(file=paste0("output/output_",setcause[k],".RDS"))
-  
+  cause <- list(anlsoa=anlsoa, stdratelsoa=stdratelsoa, anlad=anlad, stdratelad=stdratelad, anreg=anreg, 
+    stdratereg=stdratereg, animd=animd, stdrateimd=stdrateimd, anall=anall, stdrateall=stdrateall, 
+    mmtmmplsoa=mmtmmplsoa, rrlsoa=rrlsoa, toteventlsoa=toteventlsoa)
+  saveRDS(cause, file=paste0("output/output_",setcause[k],".RDS"))
+
   # REMOVE OBJECTS
   rm(effectlist, ansim, temp)
   rm(anlsoa, stdratelsoa, anlad, stdratelad, anreg, stdratereg, animd,

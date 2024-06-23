@@ -27,7 +27,7 @@ listlsoa <- unique(lookup$LSOA11CD)
 listlad <- sort(unique(lookup$LAD11CD))
 
 ################################################################################
-# MAIN DATASET
+# MAIN DATASETS
 
 # LOAD HOSPITALISATIONS DATA, SELECT YEARS, REMOVE MISSING AGE
 hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES_stacked.RDS")))
@@ -36,7 +36,7 @@ hesdata <- hesdata[!is.na(agegr)]
 
 # CREATE A LIST OF CAUSES
 # NB: SELECT IF NEEDED
-setcause <- sort(unique(hesdata$cause))[c(1,2,5,6,11)]
+setcause <- sort(unique(hesdata$cause))[c(6)]
 
 # RENAME AND EXCLUDE NON-MATCHING LSOA
 hesdata <- hesdata[LSOA11CD %in% listlsoa,]
@@ -48,7 +48,7 @@ setkey(hesdata, LSOA11CD, date)
 # LOAD THE TEMPERATURE DATA
 listtmean <- lapply(seqyear, function(y) {
   cat(y, "")
-  file <- paste0("tasmean_lsoa_", y, ".RDS")
+  file <- paste0("lsoa_daily_temp_", y, ".RDS")
   out <- data.table(readRDS(paste(tmeanpath, file, sep="/")))
   setkey(out, LSOA11CD, date)
   out
@@ -65,6 +65,10 @@ hesdata <- as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]) |>
   merge(hesdata, by="LSOA11CD")
 datatmean <- as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]) |>
   merge(datatmean, by="LSOA11CD")
+
+# HOLIDAYS FOR ENGLAND
+holy <- readRDS(paste0(holypath, "/holidays_GB_1980_2025.RDS")) |>
+  subset(select=c(date, GB_ENG)) |> rename(holy=GB_ENG) |> as.data.table()
 
 ################################################################################
 # RURAL-URBAN CLASSIFICATION

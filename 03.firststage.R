@@ -35,6 +35,11 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
     dtmean[, doy:=yday(date)]
     dtmean[, dow:=wday(date)]
     
+    # MERGE HOLIDAYS (ALSO FILLING MISSING) AND ORDER
+    dtmean <- merge(dtmean, holy, by="date", all.x=T)
+    dtmean[, holy:=nafill(as.numeric(holy), fill=0)]
+    setkey(dtmean, LSOA11CD, date)
+    
     # COMPUTE TEMPERATURE PERCENTILES AT LAD LEVEL
     ladtmeanper <- quantile(dtmean$tmean, predper/100, na.rm=T)
     
@@ -81,7 +86,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
         # RUN MODEL THE MODEL ON NON-EMPTY STRATA
         data$count <- data[[agevarlab[j]]]
         data[, sub:=sum(count)>0, by=list(stratum)]
-        mod <- gnm(count ~ cbtemp + ns(time,knots=tknots) + factor(dow),
+        mod <- gnm(count ~ cbtemp + ns(time,knots=tknots) + factor(dow) + holy,
           eliminate=stratum, family=quasipoisson(), data=data,
           na.action="na.exclude", subset=sub)
         

@@ -41,7 +41,7 @@ varper <- c(50,90)
 # LAG-REPONSE PARAMETERIZATION
 #maxlag <- 21
 # Seasonal analysis only: define a short lag period
-maxlag <- 3
+maxlag <- 5
 lagfun <- "ns"
 lagknots <- logknots(maxlag, 2)
 

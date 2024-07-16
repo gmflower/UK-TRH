@@ -49,10 +49,10 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
     names(lsoatmeanper)[-1] <- paste0(c(0,varper,100), ".0%")
     
     # CREATE STRATUM VARIABLE
-    #dtmean[, stratum:=factor(paste(LSOA11CD,year,month,sep=":"))]
+    dtmean[, stratum:=factor(paste(LSOA11CD,year,month,sep=":"))]
     
     # Seasonal analysis only: create stratum for LSOA and year
-    dtmean[, stratum:=factor(paste(LSOA11CD,year,sep=":"))]
+    #dtmean[, stratum:=factor(paste(LSOA11CD,year,sep=":"))]
 
     # PARAMETERIZE THE CB of temperature
     #argvar <- list(fun=varfun, knots=ladtmeanper[paste0(varper, ".0%")])
@@ -71,7 +71,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
       )
     arglag <- list(knots = lagknots)
     cbtemp <- crossbasis(dtmean$tmean, lag=maxlag, argvar=argvar, arglag=arglag,
-      group=c(factor(dtmean$stratum)))    
+      group=paste0(dtmean$LSOA11CD, dtmean$year))    
     
     
     # Seasonal analysis only: spline for day of the year
@@ -108,7 +108,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
         #  na.action="na.exclude", subset=sub)
         
         # Seasonal analysis only:
-        mod <- gnm(count ~ cbtemp + ns(doy,knots=tknots)*factor(year) + factor(dow) + holy,
+        mod <- gnm(count ~ cbtemp + ns(doy,knots=tknots):factor(year) + factor(dow) + holy,
           eliminate=stratum, family=quasipoisson(), data=data,
           na.action="na.exclude", subset=sub)        
         

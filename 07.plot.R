@@ -28,14 +28,16 @@ preddataage <- cbind(agegr=agevarlab, preddataage)
 # LABELS FOR PERCENTILES
 labperc <- paste(c(0,1,25,50,75,99,100),sep="")
 
-# MULTI-PANEL PLOT
-pdf("figures/expresp.pdf", height=6, width=8.5)
-layout(matrix(1:4, 2, byrow=T))
-par(mar=c(4,4,2,0.5), las=1, mgp=c(2.5,1,0))
 
 # LOOP ACROSS CAUSES
 for(k in seq(setcause)) {
-  
+
+  # MULTI-PANEL PLOT
+  pdf(paste0("figures/",setcause[k],"expresp.pdf"), height=6, width=8.5)
+  layout(matrix(1:4, 2, byrow=T))
+  par(mar=c(4,4,2,0.5), las=1, mgp=c(2.5,1,0))
+
+    
   # LOOP
   for(j in seq(agelab)) {
     
@@ -53,7 +55,8 @@ for(k in seq(setcause)) {
     vcov <- (Xdeslsoa %x% diag(vardf)) %*% vcovmeta %*% 
       t(Xdeslsoa %x% diag(vardf))
     
-    cen <- tmeanper[[which.min(bvar%*%fit)]]
+    #cen <- tmeanper[[which.min(bvar%*%fit)]]
+    cen <- tmeanper[["90.0%"]]
     cpall <- crosspred(bvar, coef=fit, vcov=vcov, at=tmeanper, model.link="log",
       cen=cen)
     plot(cpall, type="n", ci="n", ylim=c(0.5,2.5), ylab="RR",
@@ -67,10 +70,10 @@ for(k in seq(setcause)) {
     title(setcause[k])
     mtext(paste("Aged", agelab[j]))
   }
-
+dev.off()
 }
 
-dev.off()
+
 
 ################################################################################
 # META-VARIABLES AND PCA

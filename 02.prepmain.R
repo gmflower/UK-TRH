@@ -32,11 +32,16 @@ listlad <- sort(unique(lookup$LAD11CD))
 # LOAD HOSPITALISATIONS DATA, SELECT YEARS, REMOVE MISSING AGE
 hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES_stacked.RDS")))
 hesdata <- hesdata[year(date) %in% seqyear,]
+
+# Seasonal analysis only: select summer months
+hesdata <- hesdata[month(date) %in% smonth,]
 hesdata <- hesdata[!is.na(agegr)]
 
 # CREATE A LIST OF CAUSES
 # NB: SELECT IF NEEDED
-setcause <- sort(unique(hesdata$cause))[c(6)]
+setcause <- sort(unique(hesdata$cause))
+setcause <- setcause[c(1,2,3,5,6,8,9,11,13,14,15,18,20,21,22)]
+setcause
 
 # RENAME AND EXCLUDE NON-MATCHING LSOA
 hesdata <- hesdata[LSOA11CD %in% listlsoa,]
@@ -58,6 +63,10 @@ rm(listtmean)
 
 # RENAME AND EXCLUDE NON-MATCHING LSOA
 datatmean <- datatmean[LSOA11CD %in% listlsoa,]
+
+# Seasonal analysis only: select summer months
+datatmean <- datatmean[month(date) %in% smonth,]
+
 setkey(datatmean, LSOA11CD, date)
 
 # MERGE LSOA AND LAD ONTO HES AND TMEAN DATA 

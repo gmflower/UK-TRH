@@ -29,25 +29,23 @@ listlad <- sort(unique(lookup$LAD11CD))
 ################################################################################
 # MAIN DATASETS
 
-# LOAD HOSPITALISATIONS DATA, SELECT YEARS, REMOVE MISSING AGE
+# LOAD HOSPITALISATIONS DATA, TRANFORM DATE 
 hesdata <- as.data.table(readRDS(paste0(hosppath, "/emrgcountHES_stacked.RDS")))
-hesdata <- hesdata[year(date) %in% seqyear,]
+hesdata$date <- as.Date(hesdata$date)
 
-# Seasonal analysis only: select summer months
-hesdata <- hesdata[month(date) %in% smonth,]
-hesdata <- hesdata[!is.na(agegr)]
+# REMOVE MISSING AGE, THEN SELECT YEARS AND EXCLUDE NON-MATCHING LSOA
+hesdata <- hesdata[!is.na(agegr),]
+hesdata <- hesdata[year(date) %in% seqyear & LSOA11CD %in% listlsoa,]
+
+# SELECT ONLY SUMMER MONTHS
+hesdata <- hesdata[month(date) %in% seqmonth,]
 
 # CREATE A LIST OF CAUSES
 # NB: SELECT IF NEEDED
 setcause <- sort(unique(hesdata$cause))
 setcause <- setcause[c(1,2,3,5,6,8,9,11,13,14,15,18,20,21,22)]
-setcause
 
-# RENAME AND EXCLUDE NON-MATCHING LSOA
-hesdata <- hesdata[LSOA11CD %in% listlsoa,]
-
-# TRANFORM DATE AND SET KEYS
-hesdata$date <- as.Date(hesdata$date)
+# SET KEYS
 setkey(hesdata, LSOA11CD, date)
 
 # LOAD THE TEMPERATURE DATA
@@ -61,12 +59,13 @@ listtmean <- lapply(seqyear, function(y) {
 datatmean <- do.call(rbind, listtmean)
 rm(listtmean)
 
-# RENAME AND EXCLUDE NON-MATCHING LSOA
+# SELECT SUMMER MONTHS, EXCLUDE NON-MATCHING LSOA
 datatmean <- datatmean[LSOA11CD %in% listlsoa,]
 
-# Seasonal analysis only: select summer months
-datatmean <- datatmean[month(date) %in% smonth,]
+# SELECT SUMMER MONTHS
+datatmean <- datatmean[month(date) %in% seqmonth,]
 
+# SET KEYS
 setkey(datatmean, LSOA11CD, date)
 
 # MERGE LSOA AND LAD ONTO HES AND TMEAN DATA 

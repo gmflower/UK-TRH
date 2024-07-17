@@ -50,36 +50,19 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
     
     # CREATE STRATUM VARIABLE
     dtmean[, stratum:=factor(paste(LSOA11CD,year,month,sep=":"))]
-    
-    # Seasonal analysis only: create stratum for LSOA and year
-    #dtmean[, stratum:=factor(paste(LSOA11CD,year,sep=":"))]
 
-    # PARAMETERIZE THE CB of temperature
-    #argvar <- list(fun=varfun, knots=ladtmeanper[paste0(varper, ".0%")])
+    # PARAMETERIZE THE CB OF TEMPERATURE
+    argvar <- list(fun=varfun, knots=ladtmeanper[paste0(varper, ".0%")])
     #argvar$degree <- vardegree
-    #arglag <- list(fun=lagfun, knots=lagknots)
+    arglag <- list(fun=lagfun, knots=lagknots)
     
     # CREATE THE CB of temperature
-    #cbtemp <- crossbasis(dtmean$tmean, lag=maxlag, argvar=argvar, arglag=arglag,
-    #  group=factor(dtmean$LSOA11CD)) 
-    
-    # Seasonal analysis only: Parameterise the exp-response relationship:
-    argvar <- list(
-      fun = varfun,
-      knots=ladtmeanper[paste0(varper, ".0%")],
-      Bound = range(ladtmeanper, na.rm = T)
-      )
-    arglag <- list(knots = lagknots)
     cbtemp <- crossbasis(dtmean$tmean, lag=maxlag, argvar=argvar, arglag=arglag,
-      group=paste0(dtmean$LSOA11CD, dtmean$year))    
+      group=paste0(dtmean$LSOA11CD, dtmean$year)) 
     
-    
-    # Seasonal analysis only: spline for day of the year
-    tknots <- equalknots(dtmean$doy, df=4)
-    
-    # SPECIFY KNOTS OF SPLINES OF TIME 
-    #tknots <- equalknots(dtmean$time, df=nkseas*length(unique(dtmean$year)))
-    
+    # KNOTS OF SPLINE OF DAY OF THE YEAR
+    kseas <- equalknots(dtmean$doy, df=dfseas)
+
     # LOOP ACROSS CAUSES
     clist <- lapply(seq(setcause), function(k) {
       
@@ -103,12 +86,9 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
         # RUN MODEL THE MODEL ON NON-EMPTY STRATA
         data$count <- data[[agevarlab[j]]]
         data[, sub:=sum(count)>0, by=list(stratum)]
-        #mod <- gnm(count ~ cbtemp + ns(time,knots=tknots) + factor(dow) + holy,
-        #  eliminate=stratum, family=quasipoisson(), data=data,
-        #  na.action="na.exclude", subset=sub)
-        
+
         # Seasonal analysis only:
-        mod <- gnm(count ~ cbtemp + ns(doy,knots=tknots):factor(year) + factor(dow) + holy,
+        mod <- gnm(count ~ cbtemp + ns(doy,knots=kseas) + factor(dow) + holy,
           eliminate=stratum, family=quasipoisson(), data=data,
           na.action="na.exclude", subset=sub)        
         
@@ -125,7 +105,8 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
       names(estlist) <- agevarlab
       estlist
     })
-    
+
+    # NAME
     names(clist) <- setcause
     
     # RETURN ESTIMATES ABOVE, LAD TMEAN DISTRIBUTUON, LSOA TMEAN AVERAGE AND RANGE,

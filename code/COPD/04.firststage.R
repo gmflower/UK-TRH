@@ -136,4 +136,4 @@ plot(unlist(lapply(stage1list, function(y)
 #file.remove("temp/logstage1.txt")
 
 # SAVE FIRST-STAGE OBJECT
-saveRDS(stage1list, "C:/Users/LSHGF3/Documents/RProjects/HES_adhoc/diagnoses_at_exit/extracted/stage1list.RDS")
+saveRDS(stage1list, "C:/Users/LSHGF3/Documents/RProjects/HES_adhoc/extracted/stage1list.RDS")

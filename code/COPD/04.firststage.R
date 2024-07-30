@@ -53,9 +53,6 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
 
     # PARAMETERIZE THE CB OF TEMPERATURE
     argvar <- list("thr", thr=23.2)
-    #argvar <- list(fun=varfun, knots=ladtmeanper[paste0(varper, ".0%")])
-    #argvar$degree <- vardegree
-    #arglag <- list(fun=lagfun, knots=lagknots)
     arglag <- list("strata", df=1)
     
     # CREATE THE CB of temperature
@@ -106,14 +103,6 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
           nevent=sum(data$count,na.rm=T))
         }
 
-        # PREDICT (for non-NA)
-        #redall <- crossreduce(cbtemp, mod, cen=15)
-        
-        
-        # RETURN COEF/VCOV, CONVERGENCE, DISPERSION, TOTAL DEATHS
-        #list(coefall=coef(redall), vcovall=vcov(redall), conv=mod$converged,
-        #  disp=sum(residuals(mod,type="pearson")^2, na.rm=T)/mod$df.residual,
-        #  nevent=sum(data$count,na.rm=T))
       })
       
       # RENAME AND RETURN
@@ -147,4 +136,4 @@ plot(unlist(lapply(stage1list, function(y)
 #file.remove("temp/logstage1.txt")
 
 # SAVE FIRST-STAGE OBJECT
-saveRDS(stage1list, "temp/stage1list.RDS")
+saveRDS(stage1list, "C:/Users/LSHGF3/Documents/RProjects/HES_adhoc/diagnoses_at_exit/extracted/stage1list.RDS")

@@ -6,6 +6,7 @@
 # EFFECTS
 ################################################################################
 
+
 # PREPARE THE PARALLELIZATION
 ncores <- detectCores()
 cl <- parallel::makeCluster(max(1,ncores-2))
@@ -46,15 +47,20 @@ for(k in seq(setcause)) {
       file="temp/effects.txt", append=T)
     
     # COMPUTE TEMPERATURE PERCENTILES
-    tmeanper <- quantile(dtmean$tmean, predper/100, na.rm=T)
+    tmeanper <- quantile(dtmean$tasmean, predper/100, na.rm=T)
       
     # DEFINE PARAMETERS OF THE EXPOSURE-RESPONSE FUNCTION
     argvar <- list(fun=varfun, knots=tmeanper[paste0(varper, ".0%")],
       Bound=tmeanper[c("0.0%","100.0%")])
-    argvar$degree <- vardegree
+    # argvar$degree <- vardegree
     
     # LOOP ACROSS AGE GROUPS
     estlist <- lapply(seq(agevarlab), function(j) {
+      
+      # BASIS
+      indextr <- which(predper<1 | predper>99)
+      bvar <- do.call(onebasis, c(list(x=tmeanper[-indextr]), argvar))
+      vardf <- ncol(bvar)
       
       # RECONSTRUCT THE MODEL MATRIX OF THE META-REGRESSION AT LSOA LEVEL
       lsoavar <- cbind(agegr=agevarlab[j], lsoacomp[i,])
@@ -69,8 +75,6 @@ for(k in seq(setcause)) {
       lsoapar <- list(fit=fit, vcov=vcov)
       
       # IDENTIFY MMT/MMP (BETWEEN 1ST AND 99TH)
-      indextr <- which(predper<1 | predper>99)
-      bvar <- do.call(onebasis, c(list(x=tmeanper[-indextr]), argvar))
       mmt <- tmeanper[-indextr][[which.min(bvar%*%lsoapar$fit)]]
       mmp <- predper[[which(tmeanper%in%mmt)]]
       mmtmmp <- data.frame(LSOA11CD=listlsoa[i], agegr=agevarlab[j], 
@@ -85,7 +89,7 @@ for(k in seq(setcause)) {
         effect=c("cold","heat")), rr)
       
       # DERIVE THE CENTERED BASIS
-      bvar <- do.call(onebasis, c(list(x=dtmean$tmean), argvar))
+      bvar <- do.call(onebasis, c(list(x=dtmean$tasmean), argvar))
       cenvec <- do.call(onebasis, c(list(x=mmt), argvar))
       bvarcen <- scale(bvar, center=cenvec, scale=F) 
       
@@ -93,8 +97,11 @@ for(k in seq(setcause)) {
       prop <- subset(lsoaprop, LSOA11CD==listlsoa[i] & agegr==agevarlab[j])$prop
       count <- subset(ladevent, LAD11CD==subset(lookup, LSOA11CD==listlsoa[i])$LAD11CD & 
           agegr==agevarlab[j] & cause==setcause[k])$count
-      seas <- subset(seasevent, agegr==agevarlab[j] & cause==setcause[k])$mult
-      events <- (count*prop*seas[yday(dtmean$date)]) |> Lag(-maxlag:0) |>
+      seas <- subset(seasevent, agegr==agevarlab[j] & cause==setcause[k])
+      
+      # Pierre: I added the group as events at the boundaires of season were "cycling". Not sure it is 100% right
+      events <- (count*prop*seas[match(yday(dtmean$date), seas$doy)]$mult) |> 
+        Lag(-maxlag:0, group = year(dtmean$date)) |>
         rowMeans()
       
       # INDICATOR FOR COLD/HEAT DAYS

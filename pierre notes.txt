@@ -1,0 +1,11 @@
+## Changes
+- Changed path for temperature `tmeanpath` (added `met_v13` as it changed) and changed `tmean` in the code to `tasmean` (everywhere)
+- I also changed a couple of places to compute everything for the specific season (for isntane the forward mean of event was cycling)
+- I have put as comment all the parts in which `vardegree` is set, as `ns` does not have a degree and there is no parameter for this
+
+
+## Unimportant notes
+
+- `ns` used for the variables instead of `bs`
+- `seasevent` extrapolates widely when summer months are selected (predicts for `1:366`). Maybe `pbs` is not the most appropriate in this case.
+- In `foreach` loops, the `split` to have cause specific data.frames, can be replaced by the iterator `isplit` (more efficient).

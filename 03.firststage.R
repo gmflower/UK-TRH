@@ -41,11 +41,11 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
     setkey(dtmean, LSOA11CD, date)
     
     # COMPUTE TEMPERATURE PERCENTILES AT LAD LEVEL
-    ladtmeanper <- quantile(dtmean$tasmean, predper/100, na.rm=T)
+    ladtmeanper <- quantile(dtmean$tmean, predper/100, na.rm=T)
     
     # COMPUTE TEMPERATURE PERCENTILES AT LSOA LEVEL (TO BE STORED)
     lsoatmeanper <-  dtmean[, lapply(c(0,varper,100), function(x) 
-      quantile(tasmean, x/100, na.rm=T)), by=LSOA11CD] |> as.data.frame()
+      quantile(tmean, x/100, na.rm=T)), by=LSOA11CD] |> as.data.frame()
     names(lsoatmeanper)[-1] <- paste0(c(0,varper,100), ".0%")
     
     # CREATE STRATUM VARIABLE
@@ -57,7 +57,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
     arglag <- list(fun=lagfun, knots=lagknots)
     
     # CREATE THE CB of temperature
-    # cbtemp <- crossbasis(dtmean$tasmean, lag=maxlag, argvar=argvar, 
+    # cbtemp <- crossbasis(dtmean$tmean, lag=maxlag, argvar=argvar, 
     #   arglag=arglag, group=paste0(dtmean$LSOA11CD, dtmean$year)) 
     
     # KNOTS OF SPLINE OF DAY OF THE YEAR
@@ -80,7 +80,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
         by.y=c("LSOA11CD", "date"))
       data[, (agevarlab):=lapply(.SD, nafill, fill=0), .SDcols=agevarlab]
       
-      cbtemp <- crossbasis(data$tasmean, lag=maxlag, argvar=argvar,
+      cbtemp <- crossbasis(data$tmean, lag=maxlag, argvar=argvar,
         arglag=arglag, group=paste0(data$LSOA11CD, data$year))
       
       # LOOP ACROSS AGE GROUPS

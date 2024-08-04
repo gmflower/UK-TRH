@@ -47,7 +47,7 @@ for(k in seq(setcause)) {
       file="temp/effects.txt", append=T)
     
     # COMPUTE TEMPERATURE PERCENTILES
-    tmeanper <- quantile(dtmean$tasmean, predper/100, na.rm=T)
+    tmeanper <- quantile(dtmean$tmean, predper/100, na.rm=T)
       
     # DEFINE PARAMETERS OF THE EXPOSURE-RESPONSE FUNCTION
     argvar <- list(fun=varfun, knots=tmeanper[paste0(varper, ".0%")],
@@ -89,7 +89,7 @@ for(k in seq(setcause)) {
         effect=c("cold","heat")), rr)
       
       # DERIVE THE CENTERED BASIS
-      bvar <- do.call(onebasis, c(list(x=dtmean$tasmean), argvar))
+      bvar <- do.call(onebasis, c(list(x=dtmean$tmean), argvar))
       cenvec <- do.call(onebasis, c(list(x=mmt), argvar))
       bvarcen <- scale(bvar, center=cenvec, scale=F) 
       

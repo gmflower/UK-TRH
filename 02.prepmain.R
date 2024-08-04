@@ -227,8 +227,8 @@ rm(building)
 
 #tmeansumm <-  datafull[, list(meantmean=mean(tmean), 
 #  rangetmean=diff(range(tmean))), by=LSOA11CD]
-tmeansumm <-  datatmean[, list(meantmean=mean(tasmean),
-  rangetmean=diff(range(tasmean))), by=LSOA11CD]
+tmeansumm <-  datatmean[, list(meantmean=mean(tmean),
+  rangetmean=diff(range(tmean))), by=LSOA11CD]
 
 ################################################################################
 # SHAPEFILES

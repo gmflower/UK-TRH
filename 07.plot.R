@@ -16,7 +16,7 @@ per <- names(tmeanper)
 # DEFINE EXPOSURE-RESPONSE
 argvar <- list(fun=varfun, knots=tmeanper[paste0(varper, ".0%")],
   Bound=tmeanper[c("0.0%","100.0%")])
-argvar$degree <- vardegree
+# argvar$degree <- vardegree
 bvar <- do.call(onebasis, c(list(x=tmeanper), argvar))
 
 # DEFINE META-PREDICTORS FOR AVERAGE CURVES BY AGE
@@ -55,8 +55,13 @@ for(k in seq(setcause)) {
     vcov <- (Xdeslsoa %x% diag(vardf)) %*% vcovmeta %*% 
       t(Xdeslsoa %x% diag(vardf))
     
-    #cen <- tmeanper[[which.min(bvar%*%fit)]]
-    cen <- tmeanper[["90.0%"]]
+    
+    # MMT
+    indextr <- which(predper<1 | predper>99)
+    bvar <- do.call(onebasis, c(list(x=tmeanper[-indextr]), argvar))
+    vardf <- ncol(bvar)
+    cen <- tmeanper[-indextr][[which.min(bvar%*%fit)]]
+    # cen <- tmeanper[["90.0%"]]
     cpall <- crosspred(bvar, coef=fit, vcov=vcov, at=tmeanper, model.link="log",
       cen=cen)
     plot(cpall, type="n", ci="n", ylim=c(0.5,2.5), ylab="RR",

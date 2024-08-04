@@ -123,8 +123,9 @@ seasevent <- lapply(setcause, function(x) {
   
   # FUNCTION TO COMPUTE THE SMOOTHED PROPORTION
   funbase <- function(count, doy) {
-    mod <- glm(count ~ pbs(doy,4,Bound=c(1,366)), family=poisson())
-    pred <- predict(mod, newdata=data.frame(doy=1:366), type="response")
+    mod <- glm(count ~ pbs(doy,4,Bound=c(1, 366)), family=poisson())
+    pred <- predict(mod, newdata=data.frame(doy=1:366), 
+      type="response")
     data.table(doy=1:366, mult=pred/mean(pred))
   }
   
@@ -139,7 +140,8 @@ seasevent <- lapply(setcause, function(x) {
 }) |> Reduce(rbind, x=_)
 
 # AVERAGE DAILY EVENTS BY LAD AND LSOA/LAD POP PROPORTION BY CAUSE AND AGE GROUP
-ladevent <- hesdata[, list(count=sum(count)/length(seqyear)/365.25),
+ladevent <- hesdata[, 
+  list(count=sum(count)/length(seqyear)/diff(range(seasevent$doy))),
   by=c("LAD11CD","agegr","cause")]
 lsoaprop <- as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]) |>
   merge(pop, by="LSOA11CD")
@@ -225,8 +227,8 @@ rm(building)
 
 #tmeansumm <-  datafull[, list(meantmean=mean(tmean), 
 #  rangetmean=diff(range(tmean))), by=LSOA11CD]
-tmeansumm <-  datatmean[, list(meantmean=mean(tmean),
-  rangetmean=diff(range(tmean))), by=LSOA11CD]
+tmeansumm <-  datatmean[, list(meantmean=mean(tasmean),
+  rangetmean=diff(range(tasmean))), by=LSOA11CD]
 
 ################################################################################
 # SHAPEFILES

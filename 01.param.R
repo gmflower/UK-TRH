@@ -10,7 +10,7 @@
 lookuppath <- "V:/VolumeQ/AGteam/ONS/geography/lookup/"
 #deathpath <- "V:/VolumeQ/AGteam/ONS/mortality/data"
 hosppath <- "V:/VolumeQ/AGteam/HES/extracted"
-tmeanpath <- "V:/VolumeQ/AGteam/LSOA_Level/processed/temperature"
+tmeanpath <- "V:/VolumeQ/AGteam/LSOA_Level/processed/temperature/met_v13"
 holypath <- "V:/VolumeQ/AGteam/Holidays"
 
 # AGE GROUPS AND CUT-OFF POINTS

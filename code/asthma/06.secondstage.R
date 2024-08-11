@@ -14,23 +14,25 @@
 # summary(pca)
 
 # EXPANSION INDEX OF LADLSOA BY AGE GROUP
-# explad <- rep(seq(listlad), each=length(agelab))
-# explsoa <- rep(seq(listlsoa), each=length(agelab))
+#explad <- rep(seq(listlad), each=length(agelab))
+#explsoa <- rep(seq(listlsoa), each=length(agelab))
+# explad <- rep(seq(listlad), each=1)
+# explsoa <- rep(seq(listlsoa), each=1)
 
 # EXTRACT THE COEF/VCOV AT LAD LEVEL
 # NB: LIST OF DATAFRAMES BY CAUSE
 # ladcoeflist <- lapply(seq(setcause), function(k) {
-#   lapply(seq(stage1list), function(i) 
-#     t(sapply(stage1list[[i]]$clist[[k]], "[[", "coefall"))) |> 
-#     Reduce(rbind, x=_) |> as.data.frame() |> 
-#     cbind(LAD11CD=listlad[explad], agegr=agevarlab) |>
+#   lapply(seq(stage1list), function(i)
+#     t(sapply(stage1list[[i]]$clist[[k]], "[[", "coefall"))) |>
+#     Reduce(rbind, x=_) |> as.data.frame() |>
+#     cbind(LAD11CD=listlad[explad], agegr="total") |>
 #     relocate(LAD11CD, agegr) |> remove_rownames()
 # })
 # ladvcovlist <- lapply(seq(setcause), function(k) {
 #   lapply(seq(stage1list), function(i)
 #     lapply(stage1list[[i]]$clist[[k]], "[[", "vcovall")) |>
 #     unlist(recursive=F) |> lapply(vechMat) |> Reduce(rbind, x=_) |>
-#     as.data.frame() |> cbind(LAD11CD=listlad[explad], agegr=agevarlab) |>
+#     as.data.frame() |> cbind(LAD11CD=listlad[explad], agegr="total") |>
 #     relocate(LAD11CD, agegr) |> remove_rownames()
 # })
 # names(ladcoeflist) <- names(ladvcovlist) <- setcause
@@ -52,10 +54,10 @@
 # EMPTY OBJECTS
 # coefmetalist <- vcovmetalist <- vector(mode="list", length=length(setcause))
 # names(coefmetalist) <- names(vcovmetalist) <- setcause
-# hetmeta <- matrix(NA, nrow=length(setcause), ncol=2, 
+# hetmeta <- matrix(NA, nrow=length(setcause), ncol=2,
 #   dimnames=list(setcause, c("qstat","i2stat")))
-#convmeta <- rep(NA, length(setcause))
-#names(convmeta) <- setcause
+# convmeta <- rep(NA, length(setcause))
+# names(convmeta) <- setcause
 
 # DEFINE FORMULA (NB: IDENTICAL FOR ALL CAUSES)
 # fmeta <- paste0("cbind(", paste(names(ladcoeflist[[1]][-c(1:2)]), collapse=", "),
@@ -64,17 +66,17 @@
 
 # RUN THE META-ANALYTICAL MODEL LOOPING ACROSS CAUSES
 # for(k in seq(setcause)) {
-#   
+# 
 #   # PRINT
 #   cat(setcause[k], "")
-#   
+# 
 #   # RUN THE META-REGRESSION
-#   metaall <- mixmeta(fmeta, S=ladvcovlist[[k]][-c(1:2)], method="fixed", 
+#   metaall <- mixmeta(fmeta, S=ladvcovlist[[k]][-c(1:2)], method="fixed",
 #     data=merge(ladcoeflist[[k]], ladcomp))
-#   
+# 
 #   # SUMMARY
 #   summeta <- summary(metaall)
-#   
+# 
 #   # STORE THE RESULTS
 #   coefmetalist[[k]] <- coef(metaall)
 #   vcovmetalist[[k]] <- vcov(metaall)
@@ -84,7 +86,7 @@
 # (rm(metaall, summeta))
 
 # CHECK CONVERGENCE
-#all(convmeta)
+# all(convmeta)
 
 
 
@@ -92,18 +94,38 @@
 # Asthma study replication:
 
 # Collate first stage model results:
-coef_all_ages <-  unlist(lapply(seq(stage1list), function(i) 
-    t(sapply(stage1list[[i]]$clist[["asthma"]], "[[", "coefall"))))
-vcov_all_ages <-  unlist(lapply(seq(stage1list), function(i) 
-    t(sapply(stage1list[[i]]$clist[["asthma"]], "[[", "vcovall"))))
-  
-
-# Meta-analyse (mixmeta)
-meta <- mixmeta(coef_all_ages~1, S=vcov_all_ages, method="reml")
-print(summary(meta), digits=3)
-ci.exp(meta)
+#coef_all_ages <-  unlist(lapply(seq(stage1list), function(i) 
+#    t(sapply(stage1list[[i]]$clist[["asthma"]], "[[", "coefall"))))
+#vcov_all_ages <-  unlist(lapply(seq(stage1list), function(i) 
+#    t(sapply(stage1list[[i]]$clist[["asthma"]], "[[", "vcovall"))))
 
 
+coefs<-lapply(seq(stage1list), function(i) unlist(stage1list[[i]][["clist"]][["asthma"]][["total"]][["coefall"]] ))
+for (i in 1:324) {
+  lad_tot<-unlist(coefs[i])
+  coefs_tot<-rbind(coefs_tot,lad_tot)
+}
+rownames(coefs_tot) <- listlad
+
+vcovs<-lapply(seq(stage1list), function(i) stage1list[[i]][["clist"]][["asthma"]][["total"]][["vcovall"]])
 
 
+# Fit the meta analytical model and print results:
+mix <- mixmeta(coefs_tot~1, vcovs, method="ml")
+print(summary(mix), digits=3)
+
+
+# Re-create the exposure response relationship:
+argvar <- list(
+    fun = "ns",
+    knots = quantile(data$tmean, c(50, 90) / 100, na.rm = T),
+    Bound = range(data$tmean, na.rm = T)
+  )
+bvar <- do.call(onebasis,c(list(x=data$tmean), argvar))
+
+# Calculate predictions for the pooled model using meta-analysis coefficients:
+predpool <- crosspred(bvar, coef=coef(mix), vcov=vcov(mix), model.link="log",
+  by=0.1, cen=16)
+plot(predpool, type="l", ylab="RR", ylim=c(.9,1.8), lwd=2,
+  xlab="Temperature (C)", main="Asthma Pooled Estimates\n All Ages 2002 - 2019")
 

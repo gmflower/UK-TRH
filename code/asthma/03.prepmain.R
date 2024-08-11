@@ -38,20 +38,26 @@ hesdata$date <- as.Date(hesdata$date)
 hesdata <- hesdata[year(date) %in% seqyear & LSOA11CD %in% listlsoa,]
 
 # Combine all age group counts (including NA):
-hesdata_tot <- hesdata %>% 
+hes_allages <- hesdata %>% 
   group_by(LSOA11CD, date, cause) %>% 
   summarise(count = sum(count)) %>% 
   as.data.table()
-hesdata_tot$agegr <- "total"
+hes_allages$agegr <- "total"
+
+# And append to age-specific data:
+hesdata <- rbind(hesdata, hes_allages)
+
+# Now remove NAs:
+hesdata <- hesdata[!is.na(agegr),]
 
 # SELECT ONLY SUMMER MONTHS
-hesdata_tot <- hesdata_tot[month(date) %in% seqmonth,]
+hesdata <- hesdata[month(date) %in% seqmonth,]
 
 # CREATE A LIST OF CAUSES
-setcause <- sort(unique(hesdata_tot$cause))
+setcause <- sort(unique(hesdata$cause))
 
 # SET KEYS
-setkey(hesdata_tot, LSOA11CD, date)
+setkey(hesdata, LSOA11CD, date)
 
 # LOAD THE TEMPERATURE DATA
 listtmean <- lapply(seqyear, function(y) {
@@ -74,8 +80,8 @@ datatmean <- datatmean[month(date) %in% seqmonth,]
 setkey(datatmean, LSOA11CD, date)
 
 # MERGE LSOA AND LAD ONTO HES AND TMEAN DATA 
-hesdata_tot <- as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]) |>
-  merge(hesdata_tot, by="LSOA11CD")
+hesdata <- as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]) |>
+  merge(hesdata, by="LSOA11CD")
 datatmean <- as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]) |>
   merge(datatmean, by="LSOA11CD")
 
@@ -144,7 +150,7 @@ seasevent <- lapply(setcause, function(x) {
 }) |> Reduce(rbind, x=_)
 
 # AVERAGE DAILY EVENTS BY LAD AND LSOA/LAD POP PROPORTION BY CAUSE AND AGE GROUP
-ladevent <- hesdata_tot[, list(count=sum(count)/length(seqyear)/365.25),
+ladevent <- hesdata[, list(count=sum(count)/length(seqyear)/365.25),
   by=c("LAD11CD","agegr","cause")]
 lsoaprop <- as.data.table(lookup[,c("LSOA11CD", "LAD11CD")]) |>
   merge(pop, by="LSOA11CD")

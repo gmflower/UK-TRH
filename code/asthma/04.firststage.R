@@ -6,6 +6,9 @@
 # FIRST STAGE
 ################################################################################
 
+# Create amended agevarlab:
+agevarlab <- c("age064", "age6574", "age7584", "age85plus", "total")
+
 # PREPARE THE PARALLELIZATION
 ncores <- detectCores()
 cl <- parallel::makeCluster(max(1,ncores-2))
@@ -20,7 +23,7 @@ cat(as.character(as.POSIXct(Sys.time())),file="temp/logstage1.txt",append=T)
 
 # RUN THE LOOP, FIRST BY LAD
 # NB: split AUTOMATICALLY RE-ORDER BY THE SPLITTING VAR
-stage1list <- foreach(hes=split(hesdata_tot, hesdata_tot$LAD11CD), 
+stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD), 
   dtmean=split(datatmean,datatmean$LAD11CD), i=seq(listlad),
   .packages=pack) %dopar% {
     
@@ -52,8 +55,10 @@ stage1list <- foreach(hes=split(hesdata_tot, hesdata_tot$LAD11CD),
     dtmean[, stratum:=factor(paste(LSOA11CD,year,month,sep=":"))]
 
     # PARAMETERIZE THE CB OF TEMPERATURE
-    argvar <- list("thr", thr=16)
-    arglag <- list("strata", df=1)
+    #argvar <- list("thr", thr=16)
+    argvar <- list(fun=varfun, knots=ladtmeanper[paste0(varper, ".0%")])
+    #arglag <- list("strata", df=1)
+    arglag <- list(fun=lagfun, knots=lagknots)
     
     # CREATE THE CB of temperature
     cbtemp <- crossbasis(dtmean$tmean, lag=maxlag, argvar=argvar, arglag=arglag,
@@ -77,39 +82,69 @@ stage1list <- foreach(hes=split(hesdata_tot, hesdata_tot$LAD11CD),
       # THEN FILL THE MISSING COUNTS
       data <- merge(hescause, dtmean, all.y=T, by.x=c("LSOA11CD", "date"),
         by.y=c("LSOA11CD", "date"))
-      #data[, (agevarlab):=lapply(.SD, nafill, fill=0), .SDcols=agevarlab]
-      data[, (unique(hesdata_tot$agegr)):=lapply(.SD, nafill, fill=0), .SDcols=unique(hesdata_tot$agegr)]
+      
+      # Check a column for each age group exists:
+      for (a in seq(agevarlab)) {
+        if(agevarlab[a] %in% colnames(data)) {
+          print(paste0("age group ",agevarlab[a]," already in dataset"))
+        } else
+          as.data.table(data[, (agevarlab[a]):=as.numeric(NA)])
+      }
+      
+      data[, (agevarlab):=lapply(.SD, nafill, fill=0), .SDcols=agevarlab]
+      #data[, (unique(hesdata$agegr)):=lapply(.SD, nafill, fill=0), .SDcols=unique(hesdata$agegr)]
+      #data$total[is.na(data$total)] <- 0
       
       # LOOP ACROSS AGE GROUPS
-      #estlist <- lapply(seq(agevarlab), function(j) {
-      estlist <- lapply(seq(unique(hesdata_tot$agegr)), function(j) {
-          
-        # RUN MODEL THE MODEL ON NON-EMPTY STRATA
-        #data$count <- data[[agevarlab[j]]]
-        data$count <- data[[unique(hesdata_tot$agegr)[j]]]
-        data[, sub:=sum(count)>0, by=list(stratum)]
+      estlist <- lapply(seq(agevarlab), function(j) {
+      #estlist <- lapply(seq(unique(hesdata$agegr)), function(j) {
 
-        # Seasonal analysis only:
-        mod <- gnm(count ~ cbtemp + ns(doy,knots=kseas) + factor(dow) + holy,
+        # Create counts for the specific age group:
+        data$count <- data[[agevarlab[j]]]
+        #data$count <- data[[unique(hesdata$agegr)[j]]]
+        
+        # Check sufficient counts:
+        if (sum(data$count)>=15) {
+          
+          print(paste0("Section 1 ","age group ",j))
+          # Run the model on non-empty stratum:
+          data[, sub:=sum(count)>0, by=list(stratum)]
+
+          # Seasonal analysis only:
+          mod <- gnm(count ~ cbtemp + ns(doy,knots=kseas) + factor(dow) + holy,
           eliminate=stratum, family=quasipoisson(), data=data,
           na.action="na.exclude", subset=sub)        
         
-        # check NA for cbtemp
-        if (is.na(mod[["coefficients"]][["cbtemp"]])) {
-          list(coefall=coef(list(coefficients=list(cbtemp=NA))), vcovall=NA, conv=mod$converged,
-          disp=sum(residuals(mod,type="pearson")^2, na.rm=T)/mod$df.residual,
-          nevent=sum(data$count,na.rm=T))
+          # check NA for cbtemp
+          if (is.na(mod[["coefficients"]][["cbtempv1.l1"]])) {
+            
+            print(paste0("Section 2 ","age group ",j))
+            list(coefall=coef(list(coefficients=list(cbtemp=NA))), vcovall=NA, conv=mod$converged,
+            disp=sum(residuals(mod,type="pearson")^2, na.rm=T)/mod$df.residual,
+            nevent=sum(data$count,na.rm=T))
+            
+          } else {
+            
+            print(paste0("Section 3 ","age group ",j))
+            redall <- crossreduce(cbtemp, mod, cen=15)
+            list(coefall=coef(redall), vcovall=vcov(redall), conv=mod$converged,
+            disp=sum(residuals(mod,type="pearson")^2, na.rm=T)/mod$df.residual,
+            nevent=sum(data$count,na.rm=T))
+          }
         } else {
-          redall <- crosspred(cbtemp, mod, at=16+1)
-          list(coefall=coef(redall), vcovall=vcov(redall), conv=mod$converged,
-          disp=sum(residuals(mod,type="pearson")^2, na.rm=T)/mod$df.residual,
-          nevent=sum(data$count,na.rm=T))
+          
+          #dont run the model and save empty list
+          print(paste0("Section 4 ","age group ",j))
+          list(coefall=coef(list(coefficients=list(cbtemp=NA))), vcovall=NA, conv=NA,
+            disp=as.numeric(NA),
+            nevent=sum(data$count,na.rm=T))
+          
         }
-
+        
       })
       
       # RENAME AND RETURN
-      names(estlist) <- unique(hesdata_tot$agegr)
+      names(estlist) <- agevarlab
       estlist
     })
 

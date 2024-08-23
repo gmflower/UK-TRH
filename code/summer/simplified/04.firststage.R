@@ -56,16 +56,16 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
 
     # PARAMETERIZE THE CB OF TEMPERATURE
     #argvar <- list("thr", thr=16)
-    #argvar <- list(fun=varfun, knots=ladtmeanper[paste0(varper, ".0%")])
+    argvar <- list(fun=varfun, knots=ladtmeanper[paste0(varper, ".0%")])
     #arglag <- list("strata", df=1)
-    #arglag <- list(fun=lagfun, knots=lagknots)
+    arglag <- list(fun=lagfun, knots=lagknots)
     
     
     # CREATE THE CB of temperature
-    #cbtemp <- crossbasis(dtmean$tmean, lag=maxlag, argvar=argvar, arglag=arglag,
-    #  group=paste0(dtmean$LSOA11CD, dtmean$year)) 
-    cbtemp <- crossbasis(dtmean$tmean,lag=3, argvar=list(fun="lin"),
-      arglag= list(fun="integer"))
+    cbtemp <- crossbasis(dtmean$tmean, lag=maxlag, argvar=argvar, arglag=arglag,
+      group=paste0(dtmean$LSOA11CD, dtmean$year)) 
+    #cbtemp <- crossbasis(dtmean$tmean,lag=3, argvar=list(fun="lin"),
+    #  arglag= list(fun="integer"))
     
     
     # KNOTS OF SPLINE OF DAY OF THE YEAR
@@ -115,11 +115,10 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
           data[, sub:=sum(count)>0, by=list(stratum)]
 
           # Seasonal analysis only:
-          # mod <- gnm(count ~ cbtemp + ns(doy,knots=kseas) + factor(dow) + holy,
-          # eliminate=stratum, family=quasipoisson(), data=data,
-          # na.action="na.exclude", subset=sub)        
-          mod <- glm(count ~ cbtemp + ns(doy,knots=kseas) + factor(dow) + holy,
-          family=quasipoisson(), data=data, na.action="na.exclude")        
+           mod <- gnm(count ~ cbtemp + ns(doy,knots=kseas) + factor(dow) + holy,
+           eliminate=stratum, family=quasipoisson(), data=data,
+           na.action="na.exclude", subset=sub)        
+  
           # check NA for cbtemp
           if (is.na(mod[["coefficients"]][["cbtempv1.l1"]])) {
             

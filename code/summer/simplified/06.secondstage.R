@@ -99,40 +99,49 @@
 #vcov_all_ages <-  unlist(lapply(seq(stage1list), function(i) 
 #    t(sapply(stage1list[[i]]$clist[["asthma"]], "[[", "vcovall"))))
 
-layout(matrix(1:6, 3, byrow=T))
-par(mar=c(4,4,2,0.5), las=1, mgp=c(2.5,1,0))
+for (c in seq(setcause)) {
 
-coefs<-lapply(seq(stage1list), function(i) unlist(stage1list[[i]][["clist"]][["asthma"]][["total"]][["coefall"]] ))
-lad_coef <- NULL
-coefs_all <- NULL
-for (i in 1:324) {
-  lad_coef<-unlist(coefs[i])
-  if (is.na(lad_coef[1])) {
-    #nothing
-  } else {
-  coefs_all<-rbind(coefs_all,lad_coef)
+  pdf(paste0("temp/simplified/figures/",setcause[c],"pooledexpresp.pdf"), height=8, width=8)
+  layout(matrix(1:6, 3, byrow=T))
+  par(mar=c(4,4,4,0.5), las=1, mgp=c(2.5,1,0))
+  
+  for (a in seq(agevarlab)) {
+  
+    # Collate coefficients, excluding NAs:
+    coefs<-lapply(seq(stage1list), function(i) unlist(stage1list[[i]][["clist"]][[setcause[c]]][[agevarlab[a]]][["coefall"]] ))
+    lad_coef <- NULL
+    coefs_all <- NULL
+    for (i in 1:324) {
+      lad_coef<-unlist(coefs[i])
+      if (is.na(lad_coef[1])) {
+        #nothing
+      } else {
+      coefs_all<-rbind(coefs_all,lad_coef)
+      }
+    }
+  
+    vcovs<-lapply(seq(stage1list), function(i) stage1list[[i]][["clist"]][[setcause[c]]][[agevarlab[a]]][["vcovall"]])
+    vcovs<-Filter(function(a) any(!is.na(a)), vcovs)
+    
+    # Fit the meta analytical model and print results:
+    mix <- mixmeta(coefs_all~1, vcovs, method="ml", na.action = "na.omit")
+    print(summary(mix), digits=3)
+    
+    # Re-create the exposure response relationship:
+    argvar <- list(
+        fun = "ns",
+        knots = quantile(datatmean$tmean, c(50, 90) / 100, na.rm = T),
+        Bound = range(datatmean$tmean, na.rm = T)
+      )
+    bvar <- do.call(onebasis,c(list(x=datatmean$tmean), argvar))
+    
+    # Calculate predictions for the pooled model using meta-analysis coefficients:
+    predpool <- crosspred(bvar, coef=coef(mix), vcov=vcov(mix), model.link="log",
+      by=0.1, cen=16)
+    plot(predpool, type="l", col=a, ylab="RR", ylim=c(.9,1.8), lwd=2,
+      xlab="Temperature (C)", main=paste(setcause[c],"\n Age group:",agevarlab[a]))
   }
+  
+  dev.off()
+
 }
-
-vcovs<-lapply(seq(stage1list), function(i) stage1list[[i]][["clist"]][["asthma"]][["total"]][["vcovall"]])
-vcovs<-Filter(function(a) any(!is.na(a)), vcovs)
-
-# Fit the meta analytical model and print results:
-mix <- mixmeta(coefs_all~1, vcovs, method="ml", na.action = "na.omit")
-print(summary(mix), digits=3)
-
-# Re-create the exposure response relationship:
-# argvar <- list(
-#     fun = "ns",
-#     knots = quantile(data$tmean, c(50, 90) / 100, na.rm = T),
-#     Bound = range(data$tmean, na.rm = T)
-#   )
-# bvar <- do.call(onebasis,c(list(x=data$tmean), argvar))
-
-# Calculate predictions for the pooled model using meta-analysis coefficients:
-# predpool <- crosspred(bvar, coef=coef(mix), vcov=vcov(mix), model.link="log",
-#   by=0.1, cen=16)
-# plot(predpool, type="l", ylab="RR", ylim=c(.9,1.8), lwd=2,
-#   xlab="Temperature (C)", main="Asthma Pooled Estimates 2008-2019\n Age 85+ years ")
-
-

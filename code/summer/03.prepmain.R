@@ -33,18 +33,29 @@ listlad <- sort(unique(lookup$LAD11CD))
 hesdata <- as.data.table(readRDS(paste0(hosppath, "emrgcountHES.RDS")))
 hesdata$date <- as.Date(hesdata$date)
 
-# REMOVE MISSING AGE, THEN SELECT YEARS AND EXCLUDE NON-MATCHING LSOA
-hesdata <- hesdata[!is.na(agegr),]
+# SELECT YEARS AND EXCLUDE NON-MATCHING LSOA
+#hesdata <- hesdata[!is.na(agegr),]
 hesdata <- hesdata[year(date) %in% seqyear & LSOA11CD %in% listlsoa,]
+
+# Combine all age group counts (including NA):
+hes_allages <- hesdata %>% 
+  group_by(LSOA11CD, date, cause) %>% 
+  summarise(count = sum(count)) %>% 
+  as.data.table()
+hes_allages$agegr <- "total"
+
+# And append to age-specific data:
+hesdata <- rbind(hesdata, hes_allages)
+
+# Now remove NAs:
+hesdata <- hesdata[!is.na(agegr),]
 
 # SELECT ONLY SUMMER MONTHS
 hesdata <- hesdata[month(date) %in% seqmonth,]
 
 # CREATE A LIST OF CAUSES
-# NB: SELECT IF NEEDED
 setcause <- sort(unique(hesdata$cause))
-#setcause <- setcause[c(1,2,3,5,6,8,9,11,13,14,15,18,20,21,22)]
-#setcause <- setcause[c(1,2,3,5,6,8,9,11,12,13,14,15,16,18,19,21,22,23,25)]
+setcause <- setcause[c(1,2,3,5,6,7,8,9,10,12,14,15,16,17,18,19,20,21,22,23,24,25)]
 
 # SET KEYS
 setkey(hesdata, LSOA11CD, date)
@@ -52,7 +63,7 @@ setkey(hesdata, LSOA11CD, date)
 # LOAD THE TEMPERATURE DATA
 listtmean <- lapply(seqyear, function(y) {
   cat(y, "")
-  file <- paste0("lsoa_daily_temp_", y, ".RDS")
+  file <- paste0("lsoa_temp_", y, ".RDS")
   out <- data.table(readRDS(paste(tmeanpath, file, sep="/")))
   setkey(out, LSOA11CD, date)
   out

@@ -130,7 +130,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
           } else {
             
             print(paste0("Section 3 ","age group ",j))
-            redall <- crossreduce(cbtemp, mod, cen=18)
+            redall <- crossreduce(cbtemp, mod, cen=ladtmeanper[["50.0%"]])
             list(coefall=coef(redall), vcovall=vcov(redall), conv=mod$converged,
             disp=sum(residuals(mod,type="pearson")^2, na.rm=T)/mod$df.residual,
             nevent=sum(data$count,na.rm=T))
@@ -178,6 +178,4 @@ plot(unlist(lapply(stage1list, function(y)
 #file.remove("temp/logstage1.txt")
 
 # SAVE FIRST-STAGE OBJECT
-#saveRDS(stage1list, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/asthma/stage1list.RDS")
-#saveRDS(stage1list, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/asthma/stage1list_2008to2019.RDS")
-saveRDS(stage1list, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/asthma/stage1list_linear.RDS")
+saveRDS(stage1list, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/simplified/stage1list.RDS")

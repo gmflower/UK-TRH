@@ -1,0 +1,85 @@
+################################################################################
+# UK-TRH: SMALL-AREA ANALYSIS OF TEMPERATURE RELATED HOSPITALISATIONS IN ENGLAND
+################################################################################
+
+################################################################################
+# SECOND STAGE
+################################################################################
+
+
+# (1) Extract results from the first stage model:
+
+coefs_list <- vcovs_list <- pooled_results_list <- coefs_list_c <- vcovs_list_c <- pooled_results_list_c <- NULL
+
+for (c in seq(setcause)) {
+
+  for (a in seq(agevarlab)) {
+  
+    # Collate coefficients, excluding NAs:
+    coefs<-lapply(seq(stage1list), function(i) unlist(stage1list[[i]][["clist"]][[setcause[c]]][[agevarlab[a]]][["coefall"]] ))
+    lad_coef <- NULL
+    coefs_all <- NULL
+    for (i in 1:324) {
+      lad_coef<-unlist(coefs[i])
+      if (is.na(lad_coef[1])) {
+        #nothing
+      } else {
+      coefs_all<-rbind(coefs_all,lad_coef)
+      }
+    }
+    
+    coefs_list[a]<-list(coefs_all)
+    
+    vcovs<-lapply(seq(stage1list), function(i) stage1list[[i]][["clist"]][[setcause[c]]][[agevarlab[a]]][["vcovall"]])
+    vcovs<-Filter(function(a) any(!is.na(a)), vcovs) 
+    vcovs_list[a]<-list(vcovs)
+    
+  }
+
+names(coefs_list) <- agevarlab
+names(vcovs_list) <- agevarlab
+
+coefs_list_c[c] <- list(coefs_list)
+vcovs_list_c[c] <- list(vcovs_list)
+
+}
+
+names(coefs_list_c) <- setcause
+names(vcovs_list_c) <- setcause
+
+
+# (2) Pool the results of the first stage model across LADs:
+
+# Re-create the exposure response relationship:
+argvar <- list(
+  fun = "ns",
+  knots = quantile(datatmean$tmean, c(50, 90) / 100, na.rm = T),
+  Bound = range(datatmean$tmean, na.rm = T)
+)
+bvar <- do.call(onebasis,c(list(x=datatmean$tmean), argvar))
+
+# Loop over ages and causes to pool results, and store model predictions:
+for (c in seq(setcause)) {
+  
+  for (a in seq(agevarlab)) {
+  # Pool the results for a particular age group and cause/diagnosis:
+  mix<-mixmeta(coefs_list_c[[setcause[c]]][[agevarlab[a]]]~1, vcovs_list_c[[setcause[c]]][[agevarlab[a]]], method="ml", na.action = "na.omit")
+  
+  # Calculate predictions for the pooled model using meta-analysis coefficients:
+  pooled_results_list[a] <- list(crosspred(bvar, coef=coef(mix), vcov=vcov(mix), model.link="log",
+    by=0.1, cen=quantile(datatmean$tmean, 50/100, na.rm = T)))
+  
+  }
+
+  names(pooled_results_list) <- agevarlab
+  pooled_results_list_c[c] <- list(pooled_results_list)
+}
+
+names(pooled_results_list_c) <- setcause
+
+
+saveRDS(pooled_results_list_c, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/simplified/pooled_results_list_c.RDS")
+
+
+#plot(pooled_results_list_c[[1]][[1]], type="l", col=a, ylab="RR", ylim=c(.9,1.8), lwd=2,
+#  xlab="Temperature (C)", main=paste(setcause[1],"\n Age group:",agevarlab[1]))

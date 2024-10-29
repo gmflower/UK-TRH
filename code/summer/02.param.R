@@ -9,8 +9,8 @@
 # PATH TO DIRECTORIES
 lookuppath <- "V:/VolumeQ/AGteam/ONS/geography/lookup/"
 #deathpath <- "V:/VolumeQ/AGteam/ONS/mortality/data"
-hosppath <- "~/RProjects/UK-TRH/temp/asthma/"
-tmeanpath <- "V:/VolumeQ/AGteam/LSOA_Level/processed/temperature/met_v13"
+hosppath <- "~/RProjects/UK-TRH/temp/simplified/"
+tmeanpath <- "V:/VolumeQ/AGteam/SmallArea/processed/temperature/met_v13"
 holypath <- "V:/VolumeQ/AGteam/Holidays"
 
 # AGE GROUPS AND CUT-OFF POINTS
@@ -19,15 +19,15 @@ agevarlab <- c("age064", "age6574", "age7584", "age85plus")
 agecut <- c(0, as.numeric(substr(agelab[-1],1,2))-1, 150)
 
 # SELECTION OF YEARS AND MONTHS (FOR SEASONAL ANALYSIS)
-seqyear <- 2002:2019
+seqyear <- 2008:2019
 seqmonth <- 6:8
   
 # SEQUENCE OF PERCENTILES
 predper <- c(seq(0,1,0.1), 2:98, seq(99,100,0.1))
 
 # EXPOSURE-RESPONSE PARAMETERIZATION
-#varfun <- "ns"
-#varper <- c(50,90)
+varfun <- "ns"
+varper <- c(50,90)
 
 # LAG-REPONSE PARAMETERIZATION
 maxlag <- 3

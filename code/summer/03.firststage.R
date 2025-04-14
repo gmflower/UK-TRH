@@ -115,7 +115,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
           data[, sub:=sum(count)>0, by=list(stratum)]
 
           # Seasonal analysis only:
-           mod <- gnm(count ~ cbtemp + ns(doy,knots=kseas) + factor(dow) + holy,
+           mod <- gnm(count ~ cbtemp + ns(doy,knots=kseas) + factor(dow) + holy + no2mean + pm25mean,
            eliminate=stratum, family=quasipoisson(), data=data,
            na.action="na.exclude", subset=sub)        
   
@@ -178,4 +178,5 @@ plot(unlist(lapply(stage1list, function(y)
 #file.remove("temp/logstage1.txt")
 
 # SAVE FIRST-STAGE OBJECT
-saveRDS(stage1list, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/simplified/stage1list.RDS")
+saveRDS(stage1list, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/stage1list_extended.RDS")
+

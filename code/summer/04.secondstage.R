@@ -63,7 +63,7 @@ for (c in seq(setcause)) {
   
   for (a in seq(agevarlab)) {
   # Pool the results for a particular age group and cause/diagnosis:
-  mix<-mixmeta(coefs_list_c[[setcause[c]]][[agevarlab[a]]]~1, vcovs_list_c[[setcause[c]]][[agevarlab[a]]], method="ml", na.action = "na.omit")
+  mix<-mixmeta(coefs_list_c[[setcause[c]]][[agevarlab[a]]]~1, vcovs_list_c[[setcause[c]]][[agevarlab[a]]], method="reml", na.action = "na.omit")
   
   # Calculate predictions for the pooled model using meta-analysis coefficients:
   pooled_results_list[a] <- list(crosspred(bvar, coef=coef(mix), vcov=vcov(mix), model.link="log",
@@ -78,7 +78,7 @@ for (c in seq(setcause)) {
 names(pooled_results_list_c) <- setcause
 
 
-saveRDS(pooled_results_list_c, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/simplified/pooled_results_list_c.RDS")
+saveRDS(pooled_results_list_c, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/pooled_results_list_c_extended.RDS")
 
 
 #plot(pooled_results_list_c[[1]][[1]], type="l", col=a, ylab="RR", ylim=c(.9,1.8), lwd=2,

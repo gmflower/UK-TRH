@@ -34,10 +34,12 @@ hesdata <- as.data.table(readRDS(paste0(hosppath, "emrgcountHES_stacked.RDS")))
 hesdata$date <- as.Date(hesdata$date)
 
 # SELECT YEARS AND EXCLUDE NON-MATCHING LSOA
-#hesdata <- hesdata[!is.na(agegr),]
 hesdata <- hesdata[year(date) %in% seqyear & LSOA11CD %in% listlsoa,]
 
-# Combine all age group counts (including NA):
+# Remove NAs:
+hesdata <- hesdata[!is.na(agegr),]
+
+# Combine all age group counts:
 hes_allages <- hesdata %>% 
   group_by(LSOA11CD, date, cause) %>% 
   summarise(count = sum(count)) %>% 
@@ -47,8 +49,6 @@ hes_allages$agegr <- "total"
 # And append to age-specific data:
 hesdata <- rbind(hesdata, hes_allages)
 
-# Now remove NAs:
-hesdata <- hesdata[!is.na(agegr),]
 
 # SELECT ONLY SUMMER MONTHS
 hesdata <- hesdata[month(date) %in% seqmonth,]

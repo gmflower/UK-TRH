@@ -81,5 +81,46 @@ names(pooled_results_list_c) <- setcause
 saveRDS(pooled_results_list_c, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/pooled_results_list_c_extended.RDS")
 
 
-#plot(pooled_results_list_c[[1]][[1]], type="l", col=a, ylab="RR", ylim=c(.9,1.8), lwd=2,
-#  xlab="Temperature (C)", main=paste(setcause[1],"\n Age group:",agevarlab[1]))
+# All ages:
+for (c in setcause) {
+  
+  pdf(paste("~/RProjects/UK-TRH/figures/supplementary/",c,"exposure_response.pdf"), height=9, width=9.5)
+  
+  layout(matrix(1:6,3, byrow=T))
+  par(mar=c(4,4,2,0.5), las=1, mgp=c(2.5,1,0))
+  
+  for (a in c(5,1,2,3,4)) {
+    plot(pooled_results_list_c[[c]][[a]], type="l", col=a, ylab="RR", ylim=c(.6,1.6), lwd=2,
+      xlab="Temperature (C)", main=paste(agevarlab[a]))
+  }
+  
+  dev.off()
+}
+
+# Just total age group:
+for (c in setcause) {
+  
+  pdf(paste("~/RProjects/UK-TRH/figures/supplementary/total_age_",c,"_exposure_response.pdf"), height=9, width=9.5)
+  
+  layout(matrix(1:1,1, byrow=T))
+  par(mar=c(4,4,2,0.5), las=1, mgp=c(2.5,1,0))
+
+  plot(pooled_results_list_c[[c]][[5]], type="l", col=5, ylab="RR", ylim=c(.6,1.6), lwd=2,
+    xlab="Temperature (C)")
+  
+  dev.off()
+}
+
+
+# Overlayed:
+layout(matrix(1, 1, byrow=T))
+plot(pooled_results_list_c[[c]][[1]], type="l", col=1, ylab="RR", ylim=c(.9,1.2), lwd=2,
+    xlab="Temperature (C)", main=paste(c))
+legend(20, 1.15, legend=c(agevarlab),  
+       lty=1, lwd=2, col=c(1,2,3,4,5)
+)
+for (a in 2:5) {
+lines(pooled_results_list_c[[c]][[a]], type="l", col=a, ylab="RR", ylim=c(.9,1.2), lwd=2,
+    xlab="Temperature (C)", main=paste(c))
+}
+

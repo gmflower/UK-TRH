@@ -10,7 +10,6 @@
 lookuppath <- "V:/VolumeQ/AGteam/ONS/geography/lookup/"
 hosppath <- "~/RProjects/UK-TRH/data/"
 envpath <- "V:/VolumeQ/AGteam/SmallArea/processed/"
-#tmeanpath <- "V:/VolumeQ/AGteam/SmallArea/processed/temperature/met_v13"
 holypath <- "V:/VolumeQ/AGteam/Holidays"
 
 # AGE GROUPS AND CUT-OFF POINTS

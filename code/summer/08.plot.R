@@ -33,7 +33,7 @@ labperc <- paste(c(0,1,25,50,75,99,100),sep="")
 for(k in seq(setcause)) {
 
   # MULTI-PANEL PLOT
-  pdf(paste0("temp/COPD/",setcause[k],"expresp.pdf"), height=6, width=8.5)
+  pdf(paste0("temp/",setcause[k],"expresp.pdf"), height=6, width=8.5)
   layout(matrix(1:4, 2, byrow=T))
   par(mar=c(4,4,2,0.5), las=1, mgp=c(2.5,1,0))
 

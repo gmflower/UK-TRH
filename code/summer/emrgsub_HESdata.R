@@ -12,7 +12,6 @@
 library(data.table)
 
 # SET THE FOLDERS
-setwd("C:/Users/LSHGF3/Downloads/")
 dir <- "V:/VolumeQ/AGteam/HES"
 
 # LOOKUPS FOR LSOA

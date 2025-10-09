@@ -7,7 +7,8 @@
 ################################################################################
 
 # Create amended agevarlab:
-agevarlab <- c("age064", "age6574", "age7584", "age85plus", "total")
+agevarlab <- c("age1864", "age6574", "age7584", "age85plus", "total")
+#agevarlab <- c("age1834", "age3564", "age6574", "age7584", "age85plus", "total")
 
 # PREPARE THE PARALLELIZATION
 ncores <- detectCores()
@@ -171,12 +172,12 @@ stopCluster(cl)
 # CHECK CONVERGENCE AND DISPERSION
 all(unlist(lapply(stage1list, function(y)
   lapply(y$clist, function(x) sapply(x, "[[", "conv")))))
-plot(unlist(lapply(stage1list, function(y)
-  lapply(y$clist, function(x) sapply(x, "[[", "disp")))))
+#plot(unlist(lapply(stage1list, function(y)
+#  lapply(y$clist, function(x) sapply(x, "[[", "disp")))))
 
 # CLEAN
 #file.remove("temp/logstage1.txt")
 
 # SAVE FIRST-STAGE OBJECT
-saveRDS(stage1list, "C:/Users/LSHGF3/Documents/RProjects/UK-TRH/temp/stage1list_extended.RDS")
+saveRDS(stage1list, "./temp/stage1list_extended.RDS")
 

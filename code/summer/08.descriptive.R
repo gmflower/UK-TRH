@@ -45,7 +45,7 @@ hes_byage <- hes_byage[cause %in% leadingcauses,]
 #hes_byage <- hes_byage %>% 
 #  mutate(names = factor(names, levels = names))
 
-pdf("~/RProjects/UK-TRH/figures/total_admission_burden.pdf", height=9, width=9.5)
+pdf("./figures/total_admission_burden.pdf", height=9, width=9.5)
 
 fig1 <- ggplot(data=hes_byage, aes(fill=agegr, x=count/1000, y=reorder(reorder(names,count),grouping))) +
   # First geom_bar: original bars (no outlines)
@@ -93,8 +93,8 @@ fig1
 
 dev.off()
   
-write.csv(hes_byage, file="~/RProjects/UK-TRH/tables/hes_byage.csv")
+write.csv(hes_byage, file="./tables/hes_byage.csv")
 
-ggsave("~/RProjects/UK-TRH/figures/fig1.png", fig1, height=9, width=9.5, dpi=1200)
+ggsave("./figures/fig1.png", fig1, height=9, width=9.5, dpi=1200)
 
   

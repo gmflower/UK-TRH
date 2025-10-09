@@ -26,9 +26,13 @@ yearseq <- yearseq[yearseq>=2008]
 diag <- sprintf("DIAG_%02d",1:1)
 
 # AGE GROUPS AND CUT-OFF POINTS
-agelab <- c("0-64", "65-74", "75-84", "85 and above")
-agevarlab <- c("age064", "age6574", "age7584", "age85plus")
-agecut <- c(0, as.numeric(substr(agelab[-1],1,2))-1, 150)
+agelab <- c("18-64", "65-74", "75-84", "85 and above")
+agevarlab <- c("age1864", "age6574", "age7584", "age85plus")
+agecut <- c(18, as.numeric(substr(agelab[-1],1,2))-1, 150)
+
+#agelab <- c("18-34", "35-64", "65-74", "75-84", "85 and above")
+#agevarlab <- c("age1834", "age3564", "age6574", "age7584", "age85plus")
+#agecut <- c(18, as.numeric(substr(agelab[-1],1,2))-1, 150)
 
 # AGE AND SEX
 #agegr <- ...
@@ -142,5 +146,5 @@ outdata <- as.data.frame(outdata)
   
 # Save merged file
 #saveRDS(outdata, file=paste0(dir,"/extracted/","emrgcountHES",".RDS"))
-saveRDS(outdata, file=paste0("~/RProjects/UK-TRH/data/","emrgcountHES_stacked",".RDS"))
+saveRDS(outdata, file=paste0("emrgcountHES_stacked",".RDS"))
 

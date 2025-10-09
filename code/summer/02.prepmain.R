@@ -30,7 +30,8 @@ listlad <- sort(unique(lookup$LAD11CD))
 # MAIN DATASETS
 
 # LOAD HOSPITALISATIONS DATA, TRANFORM DATE 
-hesdata <- as.data.table(readRDS(paste0(hosppath, "emrgcountHES_stacked.RDS")))
+#hesdata <- as.data.table(readRDS(paste0(hosppath, "emrgcountHES_stacked.RDS")))
+hesdata <- as.data.table(readRDS(paste0("emrgcountHES_stacked.RDS")))
 hesdata$date <- as.Date(hesdata$date)
 
 # SELECT YEARS AND EXCLUDE NON-MATCHING LSOA
@@ -53,10 +54,17 @@ hesdata <- rbind(hesdata, hes_allages)
 # SELECT ONLY SUMMER MONTHS
 hesdata <- hesdata[month(date) %in% seqmonth,]
 
-# CREATE A LIST OF CAUSES
-setcause <- sort(unique(hesdata$cause))
-setcause <- setcause[c(1:6,8:11,13,15,18:19,21,23:25)]
-
+# CREATE A LIST OF CAUSES ??
+#setcause <- sort(unique(hesdata$cause))
+#setcause <- setcause[c(1:6,8:11,13,15,18:19,21,23:25)]
+setcause <- c()
+for (i in seq(length(causelist))){
+  cause <- causelist[[i]]$shortname
+  print(cause)
+  setcause <- c(setcause, cause)
+}
+  
+  
 # SET KEYS
 setkey(hesdata, LSOA11CD, date)
 

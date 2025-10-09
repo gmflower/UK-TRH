@@ -8,14 +8,17 @@
 
 # PATH TO DIRECTORIES
 lookuppath <- "V:/VolumeQ/AGteam/ONS/geography/lookup/"
-hosppath <- "~/RProjects/UK-TRH/data/"
+hosppath <- "V:/VolumeQ/AGteam/HES/extracted/"
 envpath <- "V:/VolumeQ/AGteam/SmallArea/processed/"
 holypath <- "V:/VolumeQ/AGteam/Holidays"
 
 # AGE GROUPS AND CUT-OFF POINTS
-agelab <- c("0-64", "65-74", "75-84", "85 and above")
-agevarlab <- c("age064", "age6574", "age7584", "age85plus")
-agecut <- c(0, as.numeric(substr(agelab[-1],1,2))-1, 150)
+agelab <- c("18-64", "65-74", "75-84", "85 and above")
+agevarlab <- c("age1864", "age6574", "age7584", "age85plus")
+agecut <- c(18, as.numeric(substr(agelab[-1],1,2))-1, 150)
+#agelab <- c("18-34", "35-64", "65-74", "75-84", "85 and above")
+#agevarlab <- c("age1834", "age3564", "age6574", "age7584", "age85plus")
+#agecut <- c(18, as.numeric(substr(agelab[-1],1,2))-1, 150)
 
 # SELECTION OF YEARS AND MONTHS (FOR SEASONAL ANALYSIS)
 seqyear <- 2008:2019

@@ -1,6 +1,10 @@
+################################################################################
+# UK-TRH: SMALL-AREA ANALYSIS OF TEMPERATURE RELATED HOSPITALISATIONS IN ENGLAND
+################################################################################
 
-
-#### Forest plots of second stage results
+################################################################################
+# Forest plots of second stage results
+################################################################################
 
 # Temperature reference points:
 heat_temp <- round(quantile(datatmean$tmean, 99/100, na.rm = T),1)
@@ -10,7 +14,8 @@ shortnames <- unlist(lapply(seq(causelist), function(x) causelist[[x]][["shortna
 cause_ref_list <- data.frame(names, shortnames)
 
 rr <- rr_lowci <- rr_upci <- cause <- all_plot_data <- NULL
-ages <- c("total","age064","age6574","age7584","age85plus")
+ages <- c("total","age1864","age6574","age7584","age85plus")
+#ages <- c("total","age1834","age3564","age6574","age7584","age85plus")
 plot_data <- NULL
 
 for (c in seq(setcause)) {
@@ -49,7 +54,7 @@ all_plot_data$id <- as.numeric(factor(all_plot_data$cause,
     "resp","ari","asthma","copd","pneumonia"))) +
   as.numeric(factor(all_plot_data$grouping, 
     levels = unique(all_plot_data$grouping)))
-all_plot_data$ages <- factor(all_plot_data$ages, levels = c("total","age064","age6574","age7584","age85plus"))
+all_plot_data$ages <- factor(all_plot_data$ages, levels = ages)
 all_plot_data$age_lab <- "first"
 all_plot_data$age_lab[all_plot_data$ages=="total"] <- "second"
 
@@ -111,7 +116,7 @@ legplot <- ggplot(all_plot_data, aes(x = id, group = ages, col = ages, shape = f
     values = c(19,5)) +  # 1 for circles, 5 for diamonds
   theme(legend.position = "top", legend.direction = "horizontal") 
 
-pdf("~/RProjects/UK-TRH/figures/combined_forest_plot.pdf", height=6.5, width=16)
+pdf("./figures/combined_forest_plot.pdf", height=6.5, width=16)
 
 # Combine heatplot and legplot using patchwork
 heatplot / legplot + 
@@ -122,11 +127,7 @@ dev.off()
 png_plot <- heatplot / legplot + 
   plot_layout(heights = c(1, .1))
 
-ggsave("~/RProjects/UK-TRH/figures/fig2.png", png_plot, height=8, width=16, dpi=1200)
-ggsave("~/RProjects/UK-TRH/figures/fig2.png", png_plot, height=7, width=14, dpi=1200)
+ggsave("./figures/fig2.png", png_plot, height=8, width=16, dpi=1200)
+ggsave("./figures/fig2.png", png_plot, height=7, width=14, dpi=1200)
 
-
-
-
-write.csv(all_plot_data, file="~/RProjects/UK-TRH/tables/forest_plot_data.csv")
-
+write.csv(all_plot_data, file="./tables/forest_plot_data.csv")

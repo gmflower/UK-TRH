@@ -8,7 +8,6 @@
 
 # Create amended agevarlab:
 agevarlab <- c("age1864", "age6574", "age7584", "age85plus", "total")
-#agevarlab <- c("age1834", "age3564", "age6574", "age7584", "age85plus", "total")
 
 # PREPARE THE PARALLELIZATION
 ncores <- detectCores()
@@ -56,18 +55,12 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
     dtmean[, stratum:=factor(paste(LSOA11CD,year,month,sep=":"))]
 
     # PARAMETERIZE THE CB OF TEMPERATURE
-    #argvar <- list("thr", thr=16)
     argvar <- list(fun=varfun, knots=ladtmeanper[paste0(varper, ".0%")])
-    #arglag <- list("strata", df=1)
     arglag <- list(fun=lagfun, knots=lagknots)
-    
     
     # CREATE THE CB of temperature
     cbtemp <- crossbasis(dtmean$tmean, lag=maxlag, argvar=argvar, arglag=arglag,
-      group=paste0(dtmean$LSOA11CD, dtmean$year)) 
-    #cbtemp <- crossbasis(dtmean$tmean,lag=3, argvar=list(fun="lin"),
-    #  arglag= list(fun="integer"))
-    
+      group=paste0(dtmean$LSOA11CD, dtmean$year))
     
     # KNOTS OF SPLINE OF DAY OF THE YEAR
     kseas <- equalknots(dtmean$doy, df=dfseas)

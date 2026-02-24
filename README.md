@@ -23,4 +23,4 @@ and can be reproduced from the second stage (line 166).
 |`04.secondstage.R` | Runs the meta analysis pooling the results to obtain a single national ERF.|
 | `05.plots.R` | Produces plots featured in the main text of the article and supplementary plots related to the main analyses.|
 | `06.sensitivity_knot.R` | Reproduces the stages in scripts 03-05 for the sensitivity analysis on knot placement.|
-| `06.sensitivity_knot.R` | Reproduces the stages in scripts 03-05 for the sensitivity analysis on lag length.|
+| `07.sensitivity_lag.R` | Reproduces the stages in scripts 03-05 for the sensitivity analysis on lag length.|

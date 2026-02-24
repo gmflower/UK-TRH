@@ -3,7 +3,7 @@
 ################################################################################
 
 ################################################################################
-# SENSITIVITY ANALYSIS - EXTENDED LAG (5 DAYS) (REPRODUCABLE FROM LINE 166)
+# SENSITIVITY ANALYSIS - EXTENDED LAG (5 DAYS) (REPRODUCIBLE FROM LINE 166)
 ################################################################################
 
 # EXPOSURE-RESPONSE PARAMETERIZATION
@@ -148,7 +148,7 @@ names(stage1list) <- listlad
 stopCluster(cl)
 
 ################################################################################
-# CHECKS, CLEAN, AND SAVE
+# CHECKS, CLEAN AND SAVE
 
 # CHECK CONVERGENCE AND DISPERSION
 all(unlist(lapply(stage1list, function(y)
@@ -159,11 +159,15 @@ plot(unlist(lapply(stage1list, function(y)
 # CLEAN
 file.remove("temp/logstage1.txt")
 
-# SAVE FIRST-STAGE OBJECT
-saveRDS(stage1list, "./temp/stage1list_senslag.RDS")
+# SAVE
+saveRDS(stage1list, "./data/stage1list_senslag.RDS")
 
 ################################################################################
-# SECOND STAGE
+# SECOND STAGE (REPRODUCIBLE)
+
+# READ DATA
+
+stage1list <- readRDS("./data/stage1list_senslag.RDS")
 
 # EXTRACT THE RESULTS
 
@@ -177,7 +181,8 @@ for (c in seq(setcause)) {
     print(agevarlab[a])
     
     # COLLATE COEFFICIENTS, SKIPPING NAS
-    coefs<-lapply(seq(stage1list), function(i) unlist(stage1list[[i]][["clist"]][[setcause[c]]][[agevarlab[a]]][["coefall"]] ))
+    coefs<-lapply(seq(stage1list), function(i) unlist(
+      stage1list[[i]][["clist"]][[setcause[c]]][[agevarlab[a]]][["coefall"]] ))
     lad_coef <- NULL
     coefs_all <- NULL
     for (i in 1:length(listlad)) {

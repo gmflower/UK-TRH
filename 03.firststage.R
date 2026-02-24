@@ -3,7 +3,7 @@
 ################################################################################
 
 ################################################################################
-# FIRST STAGE (NON REPRODUCABLE)
+# FIRST STAGE (NON REPRODUCIBLE)
 ################################################################################
 
 # ADD ALL AGES
@@ -18,8 +18,8 @@ registerDoParallel(cl)
 pack <- c("dlnm", "data.table", "gnm", "tsModel", "splines")
 
 # WRITE A TEXT FILE TO TRACE ITERATIONS
-writeLines(c(""), "temp/logstage1.txt")
-cat(as.character(as.POSIXct(Sys.time())),file="temp/logstage1.txt",append=T)
+writeLines(c(""), "logstage1.txt")
+cat(as.character(as.POSIXct(Sys.time())),file="logstage1.txt",append=T)
 
 # RUN THE LOOP, FIRST BY LAD
 # NB: split AUTOMATICALLY RE-ORDER BY THE SPLITTING VAR
@@ -29,7 +29,7 @@ stage1list <- foreach(hes=split(hesdata, hesdata$LAD11CD),
     
     # STORE ITERATION (1 EVERY 10)
     if(i%%10==0) cat("\n", "iter=",i, as.character(Sys.time()), "\n",
-      file="temp/logstage1.txt", append=T)
+      file="logstage1.txt", append=T)
     
     # CREATE TIME VARS
     dtmean[, time:=as.numeric(date)]
@@ -144,7 +144,7 @@ names(stage1list) <- listlad
 stopCluster(cl)
 
 ################################################################################
-# CHECKS, CLEAN, AND SAVE
+# CHECKS, CLEAN AND SAVE
 
 # CHECK CONVERGENCE AND DISPERSION
 all(unlist(lapply(stage1list, function(y)
@@ -153,7 +153,7 @@ plot(unlist(lapply(stage1list, function(y)
   lapply(y$clist, function(x) sapply(x, "[[", "disp")))))
 
 # CLEAN
-file.remove("temp/logstage1.txt")
+file.remove("logstage1.txt")
 
-# SAVE FIRST-STAGE OBJECT
-saveRDS(stage1list, "./temp/stage1list.RDS")
+# SAVE
+saveRDS(stage1list, "./data/stage1list.RDS")

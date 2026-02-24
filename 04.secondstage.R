@@ -3,8 +3,13 @@
 ################################################################################
 
 ################################################################################
-# SECOND STAGE (REPRODUCABLE)
+# SECOND STAGE (REPRODUCIBLE)
 ################################################################################
+
+################################################################################
+# READ DATA
+
+stage1list <- readRDS("./data/stage1list.RDS")
 
 ################################################################################
 # EXTRACT THE RESULTS
@@ -19,7 +24,8 @@ for (c in seq(setcause)) {
     print(agevarlab[a])
   
     # COLLATE COEFFICIENTS, SKIPPING NAS
-    coefs<-lapply(seq(stage1list), function(i) unlist(stage1list[[i]][["clist"]][[setcause[c]]][[agevarlab[a]]][["coefall"]] ))
+    coefs<-lapply(seq(stage1list), function(i) unlist(
+      stage1list[[i]][["clist"]][[setcause[c]]][[agevarlab[a]]][["coefall"]] ))
     lad_coef <- NULL
     coefs_all <- NULL
     for (i in 1:length(listlad)) {
@@ -80,5 +86,3 @@ for (c in seq(setcause)) {
 }
 
 names(pooled_results_list_c) <- setcause
-
-saveRDS(pooled_results_list_c, "./temp/pooled_results.RDS")

@@ -1,12 +1,13 @@
 # Folders
 docs/
-#data/
 figures/
 tables/
 output/
-temp/
-#oldcode/
+old/
 objects/
+
+# Data to be released at publication
+data/
 
 # History files
 .Rhistory

@@ -3,7 +3,13 @@ docs/
 figures/
 tables/
 output/
+<<<<<<< HEAD
 old/
+=======
+temp/
+old/
+#oldcode/
+>>>>>>> a0bb80198ef14fdce1f4d1c2a50cf18f3737edbc
 objects/
 
 # Data to be released at publication

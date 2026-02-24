@@ -18,11 +18,8 @@ and can be reproduced from the second stage (line 166).
 | Script | Descriptions |
 | :--- | :--- |
 | `01.pkg_param.R` | Load the necessary R libraries and defines all the analysis parameters. |
-<<<<<<< HEAD
 | `02.prepmean.R` | Load and prepare the environmental and hospital admissions data |
-=======
 | `02.prepmain.R` | Load and prepare the environmental and hospital admissions data |
->>>>>>> a0bb80198ef14fdce1f4d1c2a50cf18f3737edbc
 | `03.firststage.R` | Centrepiece of the analysis. Loops through the causes and age groups to perform the case time series and produce the LAD level ERF.| 
 |`04.secondstage.R` | Runs the meta analysis pooling the results to obtain a single national ERF.|
 | `05.plots.R` | Produces plots featured in the main text of the article and supplementary plots related to the main analyses.|

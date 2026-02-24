@@ -1,4 +1,4 @@
-# Extreme heat and cause-specific risk of hospital admission in England: a case time series analysis
+# Extreme heat and cause-specific risk of hospital admission in the adult population in England: a case time series analysis
 
 Add DOI when available.
 
